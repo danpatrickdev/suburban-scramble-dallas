@@ -6,7 +6,8 @@ export class Coffee extends Enemy {
 
 	constructor(scene: GameScene, x: number, y: number) {
 		super(scene, x, y, 'enemy_coffee', 'coffee', 99, 0); // can't be killed; just an obstacle
-		this.body.setCircle(12, 4, 4);
+		// Sprite is 48×48 — circular puddle hitbox centered on the cup splat.
+		this.body.setCircle(18, 6, 6);
 		this.play('enemy_coffee__idle');
 	}
 

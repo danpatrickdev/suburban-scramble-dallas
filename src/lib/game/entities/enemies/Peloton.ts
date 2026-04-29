@@ -8,7 +8,8 @@ export class Peloton extends Enemy {
 		super(scene, x, y, 'enemy_peloton', 'peloton', 1, 1);
 		// Pelotons rocket past the player faster than the world scrolls.
 		this.targetVelY = scrollSpeed + 140;
-		this.body.setSize(20, 20).setOffset(6, 6);
+		// Sprite is 48×48 — keep a slightly forgiving collision box centered on the rider.
+		this.body.setSize(30, 38).setOffset(9, 5);
 		this.play('enemy_peloton__walk');
 	}
 

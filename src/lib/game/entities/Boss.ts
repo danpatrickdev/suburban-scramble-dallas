@@ -6,8 +6,9 @@ import { bridge } from '../PhaserBridge';
 export class MainCharacterBoss extends Phaser.Physics.Arcade.Sprite {
 	private maxHp: number;
 	hp: number;
-	private phoneOffset = { x: 18, y: -10 };
-	private phoneHitRadius = 14;
+	// Boss sprite is 96×96; phone is held up-right of the head, scaled accordingly.
+	private phoneOffset = { x: 28, y: -16 };
+	private phoneHitRadius = 22;
 	private dir = 1;
 	private spawnTimer = 0;
 	private settled = false;
@@ -21,7 +22,8 @@ export class MainCharacterBoss extends Phaser.Physics.Arcade.Sprite {
 		scene.add.existing(this);
 		scene.physics.add.existing(this);
 		this.setDepth(8);
-		this.body.setSize(48, 48).setOffset(8, 8);
+		// Sprite is 96×96 now — body sized to her torso, leaves the phone area free.
+		this.body.setSize(72, 80).setOffset(12, 8);
 		this.play('boss_main_character__idle');
 	}
 

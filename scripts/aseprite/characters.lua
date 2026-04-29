@@ -679,95 +679,170 @@ end
 -- ============================================================================
 
 local function drawPeloton(img, frame, anim)
-    local cx = 16
-    local cy = 16
+    local W = img.width
+    local cx = math.floor(W / 2)
+    local cy = math.floor(W / 2)
     local helmet = rgb(255, 31, 75)
+    local helmet_h = rgb(255, 110, 140)
     local frame_color = rgb(40, 40, 48)
+    local frame_h = rgb(80, 80, 88)
     local jersey = rgb(255, 80, 110)
+    local jersey_h = rgb(255, 150, 175)
     local skin = rgb(241, 199, 165)
     local wheel = rgb(20, 20, 24)
-    local rim = rgb(160, 160, 168)
+    local rim = rgb(180, 180, 188)
+    local spoke = rgb(120, 120, 130)
 
-    -- Wheels (top + bottom)
-    ellipse(img, cx, cy - 9, 4, 4, wheel)
-    ellipseRing(img, cx, cy - 9, 4, 4, rim, 1)
-    ellipse(img, cx, cy + 10, 4, 4, wheel)
-    ellipseRing(img, cx, cy + 10, 4, 4, rim, 1)
-    -- Frame
-    rect(img, cx - 1, cy - 6, 2, 14, frame_color)
-    -- Rider torso (hot pink jersey leaning forward)
-    ellipse(img, cx, cy + 1, 4, 5, jersey)
-    pset(img, cx - 2, cy - 1, rgb(255, 255, 255)) -- racing stripe
-    pset(img, cx + 1, cy - 1, rgb(255, 255, 255))
-    -- Arms gripping
-    rect(img, cx - 4, cy - 4, 2, 4, skin)
-    rect(img, cx + 2, cy - 4, 2, 4, skin)
-    -- Helmet
-    ellipse(img, cx, cy - 5, 3, 3, helmet)
-    pset(img, cx, cy - 7, rgb(255, 255, 255)) -- helmet vent
+    -- Top wheel (front)
+    ellipse(img, cx, cy - 14, 8, 8, wheel)
+    ellipseRing(img, cx, cy - 14, 8, 8, rim, 1)
+    line(img, cx, cy - 22, cx, cy - 6, spoke)
+    line(img, cx - 8, cy - 14, cx + 8, cy - 14, spoke)
+    -- Bottom wheel (back)
+    ellipse(img, cx, cy + 14, 8, 8, wheel)
+    ellipseRing(img, cx, cy + 14, 8, 8, rim, 1)
+    line(img, cx, cy + 6, cx, cy + 22, spoke)
+    line(img, cx - 8, cy + 14, cx + 8, cy + 14, spoke)
+    -- Bike frame
+    rect(img, cx - 2, cy - 10, 4, 22, frame_color)
+    rect(img, cx - 1, cy - 10, 2, 22, frame_h)
+    -- Saddle
+    rect(img, cx - 4, cy + 4, 8, 2, frame_color)
+    -- Handlebars
+    rect(img, cx - 8, cy - 12, 16, 2, frame_color)
+    -- Rider torso (jersey)
+    ellipse(img, cx, cy + 1, 7, 9, jersey)
+    rect(img, cx - 5, cy - 3, 11, 1, jersey_h)
+    -- Race number patch
+    rect(img, cx - 3, cy + 1, 6, 5, rgb(255, 255, 255))
+    pset(img, cx - 1, cy + 2, rgb(20, 20, 24))
+    pset(img, cx, cy + 2, rgb(20, 20, 24))
+    pset(img, cx, cy + 3, rgb(20, 20, 24))
+    pset(img, cx, cy + 4, rgb(20, 20, 24))
+    -- Arms
+    rect(img, cx - 8, cy - 9, 4, 6, skin)
+    rect(img, cx + 4, cy - 9, 4, 6, skin)
+    -- Pedaling legs (alternate)
+    local pedalA = (anim == "walk" or anim == "attack") and (frame % 2 == 0)
+    if pedalA then
+        rect(img, cx - 5, cy + 9, 4, 7, jersey)
+        rect(img, cx + 1, cy + 7, 4, 7, jersey)
+    else
+        rect(img, cx - 5, cy + 7, 4, 7, jersey)
+        rect(img, cx + 1, cy + 9, 4, 7, jersey)
+    end
+    -- Helmet (aero pointed)
+    ellipse(img, cx, cy - 9, 6, 5, helmet)
+    rect(img, cx - 1, cy - 14, 3, 4, helmet)
+    pset(img, cx - 1, cy - 11, helmet_h)
+    pset(img, cx, cy - 11, helmet_h)
+    -- Helmet vents
+    pset(img, cx - 3, cy - 9, rgb(20, 20, 24))
+    pset(img, cx + 2, cy - 9, rgb(20, 20, 24))
+    -- Sunglasses
+    rect(img, cx - 4, cy - 6, 9, 2, rgb(20, 20, 24))
     -- Speed lines
     if anim ~= "idle" then
-        for i = 0, 2 do
-            pset(img, frame * 2 + i, cy - 2, rgb(180, 180, 200))
-            pset(img, 31 - frame * 2 - i, cy + 4, rgb(180, 180, 200))
+        for i = 0, 5 do
+            pset(img, 1 + frame * 3 + i, cy - 5, rgb(200, 200, 220))
+            pset(img, W - 2 - frame * 3 - i, cy + 6, rgb(200, 200, 220))
+            pset(img, 1 + frame * 2 + i, cy + 11, rgb(160, 160, 180))
         end
     end
 end
 
 local function drawLeash(img, frame, anim)
-    -- Horizontal red retractable leash. The "enemy" stretches the full 48px width
-    -- but we draw a 32x32 frame; the engine scales it to GAME_WIDTH.
+    -- Horizontal red retractable leash. Engine scales it to GAME_WIDTH at runtime.
+    local W = img.width
+    local cy = math.floor(img.height / 2)
     local handle = rgb(60, 60, 64)
     local handle_h = rgb(120, 120, 128)
     local cord = rgb(208, 72, 72)
     local cord_h = rgb(255, 130, 130)
     local dog = rgb(123, 74, 30)
     local dog_h = rgb(180, 120, 60)
-    local cy = 16
+    local dog_white = rgb(245, 245, 240)
 
-    -- Cord across
-    rect(img, 0, cy - 1, 32, 2, cord)
-    rect(img, 0, cy, 32, 1, cord_h)
-    -- Handle (left)
-    rect(img, 1, cy - 4, 6, 8, handle)
-    rect(img, 1, cy - 4, 6, 1, handle_h)
-    rect(img, 1, cy + 3, 6, 1, rgb(20, 20, 24))
-    -- Dog blob (right)
-    ellipse(img, 26, cy, 4, 5, dog)
-    ellipse(img, 26, cy - 1, 3, 3, dog_h)
-    pset(img, 24, cy - 1, rgb(255, 255, 255)) -- eye
-    pset(img, 28, cy - 1, rgb(255, 255, 255)) -- eye
-    pset(img, 24, cy, rgb(20, 20, 24))
-    pset(img, 28, cy, rgb(20, 20, 24))
+    -- Cord across (thicker now)
+    rect(img, 0, cy - 2, W, 4, cord)
+    rect(img, 0, cy - 1, W, 1, cord_h)
+    rect(img, 0, cy + 1, W, 1, rgb(170, 50, 50))
+
+    -- Handle (left) — bigger plastic grip
+    rect(img, 2, cy - 7, 10, 14, handle)
+    rect(img, 2, cy - 7, 10, 2, handle_h)
+    rect(img, 2, cy + 5, 10, 2, rgb(20, 20, 24))
+    -- Wrist strap
+    rect(img, 1, cy - 1, 1, 3, rgb(20, 20, 24))
+
+    -- Dog at the right end (bigger)
+    local dx = W - 14
+    ellipse(img, dx, cy, 7, 8, dog)
+    ellipse(img, dx, cy - 1, 5, 5, dog_h)
+    rect(img, dx - 4, cy + 2, 9, 1, dog)
+    -- White chest
+    rect(img, dx - 1, cy + 2, 3, 4, dog_white)
+    -- Eyes
+    pset(img, dx - 3, cy - 2, dog_white)
+    pset(img, dx + 2, cy - 2, dog_white)
+    pset(img, dx - 3, cy - 1, rgb(20, 20, 24))
+    pset(img, dx + 2, cy - 1, rgb(20, 20, 24))
+    -- Tongue out
+    pset(img, dx, cy + 4, rgb(220, 90, 110))
+
+    -- Tension flash
     if anim ~= "idle" then
-        rect(img, 0, cy - 2 - frame, 32, 1, rgb(255, 255, 255))
+        rect(img, 0, cy - 4 - frame, W, 1, rgb(255, 255, 255))
+        rect(img, 0, cy + 3 + frame, W, 1, rgb(255, 200, 200))
     end
 end
 
 local function drawCoffee(img, frame, anim)
-    local cx = 16; local cy = 16
+    local W = img.width
+    local cx = math.floor(W / 2); local cy = math.floor(W / 2)
     local coffee = rgb(90, 58, 31)
     local coffee_d = rgb(58, 31, 10)
+    local coffee_h = rgb(135, 95, 55)
     local foam = rgb(245, 240, 220)
     local ice = rgb(180, 220, 240)
-    -- Splatter drops
-    pset(img, cx - 12, cy - 3, coffee)
-    pset(img, cx + 12, cy + 3, coffee)
-    pset(img, cx - 8, cy + 10, coffee)
-    pset(img, cx + 8, cy - 10, coffee)
-    -- Main puddle
-    ellipse(img, cx, cy, 11 + (frame % 2), 9 + (frame % 2), coffee)
-    ellipse(img, cx, cy, 8, 6, coffee_d)
-    -- Ice cubes
-    rect(img, cx - 4, cy - 3, 3, 3, ice)
-    rect(img, cx + 1, cy + 1, 3, 3, ice)
-    rect(img, cx - 3, cy - 2, 1, 1, foam)
-    rect(img, cx + 2, cy + 2, 1, 1, foam)
-    -- Straw
-    line(img, cx - 1, cy - 5, cx + 4, cy - 9, rgb(255, 80, 110))
-    line(img, cx, cy - 5, cx + 5, cy - 9, rgb(255, 100, 130))
+    local ice_h = rgb(220, 245, 255)
+    local straw_pink = rgb(255, 80, 110)
+    local straw_pink_h = rgb(255, 130, 150)
+
+    -- Splatter drops scattered widely (8 of them)
+    pset(img, cx - 18, cy - 5, coffee)
+    pset(img, cx + 18, cy + 5, coffee)
+    pset(img, cx - 12, cy + 16, coffee)
+    pset(img, cx + 12, cy - 16, coffee)
+    pset(img, cx - 20, cy + 8, coffee_d)
+    pset(img, cx + 20, cy - 8, coffee_d)
+    pset(img, cx - 6, cy + 20, coffee)
+    pset(img, cx + 6, cy - 20, coffee)
+    -- Outer puddle (with frame breathing)
+    ellipse(img, cx, cy, 16 + (frame % 2), 13 + (frame % 2), coffee)
+    -- Mid puddle
+    ellipse(img, cx, cy, 12, 9, coffee_d)
+    -- Highlight ring
+    ellipseRing(img, cx, cy, 14, 11, coffee_h, 1)
+    -- Ice cubes (3, varied)
+    rect(img, cx - 6, cy - 4, 5, 5, ice)
+    rect(img, cx - 5, cy - 3, 3, 1, ice_h)
+    rect(img, cx + 1, cy + 1, 5, 5, ice)
+    rect(img, cx + 2, cy + 2, 3, 1, ice_h)
+    rect(img, cx - 2, cy + 4, 4, 4, ice)
+    rect(img, cx - 1, cy + 5, 2, 1, ice_h)
+    -- Foam highlights on top of cubes
+    pset(img, cx - 4, cy - 2, foam)
+    pset(img, cx + 3, cy + 3, foam)
+    -- Straw poking out
+    line(img, cx - 2, cy - 6, cx + 6, cy - 14, straw_pink)
+    line(img, cx - 1, cy - 6, cx + 7, cy - 14, straw_pink_h)
+    line(img, cx, cy - 6, cx + 8, cy - 14, straw_pink)
+    -- Cup lip just visible at top
+    rect(img, cx - 5, cy - 12, 11, 2, rgb(255, 255, 255))
+    rect(img, cx - 5, cy - 12, 11, 1, rgb(220, 220, 220))
     if anim == "attack" or anim == "special" then
-        ellipseRing(img, cx, cy, 12 + frame, 10 + frame, foam)
+        ellipseRing(img, cx, cy, 16 + frame * 2, 13 + frame * 2, foam)
     end
 end
 
@@ -776,7 +851,7 @@ end
 -- ============================================================================
 
 local function drawInfluencer(img, frame, anim)
-    local cx = 32; local cy = 36
+    local cx = math.floor(img.width / 2); local cy = math.floor(img.height * 0.45)
     local bg = rgb(20, 24, 42, 0)
     rect(img, 0, 0, img.width, img.height, bg)
 
@@ -1020,13 +1095,13 @@ buildPortrait("katie",   drawKatieFront)
 buildPortrait("tia",     function(img) drawCatFront(img, { palette = PAL.tia, big = true }) end)
 buildPortrait("nancy",   function(img) drawCatFront(img, { palette = PAL.nancy, big = false }) end)
 
--- Enemies
-buildAnimSheet { id = "peloton", dir = OUT_ENEMIES, size = SPRITE, draw = drawPeloton }
-buildAnimSheet { id = "leash",   dir = OUT_ENEMIES, size = SPRITE, draw = drawLeash }
-buildAnimSheet { id = "coffee",  dir = OUT_ENEMIES, size = SPRITE, draw = drawCoffee }
+-- Enemies (bigger than characters so they read on screen)
+buildAnimSheet { id = "peloton", dir = OUT_ENEMIES, size = 48, draw = drawPeloton }
+buildAnimSheet { id = "leash",   dir = OUT_ENEMIES, size = 48, draw = drawLeash }
+buildAnimSheet { id = "coffee",  dir = OUT_ENEMIES, size = 48, draw = drawCoffee }
 
--- Boss (64x64)
-buildAnimSheet { id = "main_character", dir = OUT_BOSSES, size = 64, draw = drawInfluencer }
+-- Boss (96x96)
+buildAnimSheet { id = "main_character", dir = OUT_BOSSES, size = 96, draw = drawInfluencer }
 
 -- Tile
 buildTile()

@@ -181,7 +181,7 @@ export class GameScene extends Phaser.Scene {
 		const mod = DIFFICULTIES[this.difficulty];
 		this.boss = new MainCharacterBoss(this, mod.bossHpMult);
 		this.bossPhoneRing = this.add
-			.circle(this.boss.phoneX(), this.boss.phoneY(), 14, 0xff3333, 0)
+			.circle(this.boss.phoneX(), this.boss.phoneY(), 22, 0xff3333, 0)
 			.setStrokeStyle(2, 0xff3333, 0.8)
 			.setDepth(9);
 
@@ -194,7 +194,7 @@ export class GameScene extends Phaser.Scene {
 			// Only count hits that are within the phone's small hitbox
 			const dx = p.x - boss.phoneX();
 			const dy = p.y - boss.phoneY();
-			if (Math.hypot(dx, dy) < 22) {
+			if (Math.hypot(dx, dy) < 32) {
 				if (p.tryHit(boss as unknown as Enemy)) boss.hitPhone(p.damage);
 			}
 		});

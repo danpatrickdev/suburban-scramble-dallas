@@ -6,8 +6,9 @@ import { GAME_WIDTH } from '../../constants';
 export class Leash extends Enemy {
 	constructor(scene: GameScene, _x: number, y: number) {
 		super(scene, GAME_WIDTH / 2, y, 'enemy_leash', 'leash', 4, 1);
-		this.setDisplaySize(GAME_WIDTH, 16);
-		this.body.setSize(GAME_WIDTH, 12).setOffset(0, 18);
+		// Stretch horizontally to span the path; keep a thicker visual + hitbox.
+		this.setDisplaySize(GAME_WIDTH, 22);
+		this.body.setSize(GAME_WIDTH, 16).setOffset(0, 16);
 		this.play('enemy_leash__walk');
 	}
 
