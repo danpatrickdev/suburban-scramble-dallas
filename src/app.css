@@ -1,0 +1,77 @@
+@import 'tailwindcss';
+
+@font-face {
+	font-family: 'PixelFallback';
+	src: local('Courier New'), local('monospace');
+}
+
+:root {
+	color-scheme: dark;
+	--bg: #0c0e14;
+	--ink: #f1f5f9;
+	--accent: #f8b6cb;
+	--accent-2: #ffd500;
+	--danger: #ff3b5c;
+}
+
+html,
+body {
+	margin: 0;
+	padding: 0;
+	height: 100%;
+	background: var(--bg);
+	color: var(--ink);
+	font-family: 'PixelFallback', ui-monospace, monospace;
+	overflow: hidden;
+	user-select: none;
+}
+
+* {
+	image-rendering: pixelated;
+	image-rendering: -moz-crisp-edges;
+	image-rendering: crisp-edges;
+}
+
+button {
+	font: inherit;
+	cursor: pointer;
+}
+
+@keyframes blink {
+	50% {
+		opacity: 0.2;
+	}
+}
+
+@keyframes heart-pop {
+	0% {
+		transform: scale(1);
+	}
+	50% {
+		transform: scale(1.25);
+	}
+	100% {
+		transform: scale(1);
+	}
+}
+
+@keyframes fade-in {
+	from {
+		opacity: 0;
+	}
+	to {
+		opacity: 1;
+	}
+}
+
+.blink {
+	animation: blink 1s infinite;
+}
+
+.heart-pop {
+	animation: heart-pop 250ms ease-out;
+}
+
+.fade-in {
+	animation: fade-in 250ms ease-out;
+}
