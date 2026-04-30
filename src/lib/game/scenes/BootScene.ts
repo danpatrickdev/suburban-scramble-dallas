@@ -64,14 +64,15 @@ export class BootScene extends Phaser.Scene {
 		// Optional Spine test asset — loaded only when the SpinePlugin is registered
 		// (PhaserGame.ts toggles via ?spine URL flag).
 		if (this.registry.get('spineTest')) {
-			// `spine.SpinePlugin` exposes loader methods on `this.load.spine*`.
 			const loader = this.load as Phaser.Loader.LoaderPlugin & {
 				spineJson?: (key: string, url: string) => void;
-				spineAtlas?: (key: string, url: string) => void;
+				spineAtlas?: (key: string, url: string, premultipliedAlpha?: boolean) => void;
 			};
-			// Rosie — our actual character, rigged via the Genielabs pipeline
 			loader.spineJson?.('rosie-data', 'assets/spine/rosie/built/rosie.json');
-			loader.spineAtlas?.('rosie-atlas', 'assets/spine/rosie/built/rosie.atlas');
+			// premultipliedAlpha=false — our atlas was packed by Genielabs make_atlas.py
+			// using PIL, which writes straight-alpha PNGs. The Spine plugin defaults
+			// to PMA=true; that mismatch silently renders the skeleton invisible.
+			loader.spineAtlas?.('rosie-atlas', 'assets/spine/rosie/built/rosie.atlas', false);
 		}
 	}
 

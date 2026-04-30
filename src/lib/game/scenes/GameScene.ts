@@ -186,17 +186,14 @@ export class GameScene extends Phaser.Scene {
 		}
 		try {
 			// Use SkinsAndAnimationBoundsProvider so bones that extend during animation
-			// are accounted for — fixes false camera-culling that hides her mid-anim.
+			// are accounted for. Pulled from the registry (PhaserGame.ts stores the
+			// module after dynamic import).
 			let bp: unknown = undefined;
-			try {
-				const w = window as unknown as {
-					spine?: { SkinsAndAnimationBoundsProvider?: new (a: string | null) => unknown };
-				};
-				if (w.spine?.SkinsAndAnimationBoundsProvider) {
-					bp = new w.spine.SkinsAndAnimationBoundsProvider(null);
-				}
-			} catch {
-				// fall back to default
+			const spineModule = this.registry.get('spineModule') as
+				| { SkinsAndAnimationBoundsProvider?: new (a: string | null) => unknown }
+				| undefined;
+			if (spineModule?.SkinsAndAnimationBoundsProvider) {
+				bp = new spineModule.SkinsAndAnimationBoundsProvider(null);
 			}
 			const rosie = sceneAny.add.spine(this.player.x, this.player.y, 'rosie-data', 'rosie-atlas', bp) as typeof this.spineRosie;
 			if (!rosie) throw new Error('add.spine returned undefined');

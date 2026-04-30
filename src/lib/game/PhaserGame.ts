@@ -71,6 +71,10 @@ export async function startGame(
 	game.registry.set('character', character);
 	game.registry.set('difficulty', difficulty);
 	game.registry.set('spineTest', useSpine);
+	if (SpinePluginModule) {
+		// Expose the module so GameScene can reach BoundsProvider classes
+		game.registry.set('spineModule', SpinePluginModule);
+	}
 
 	return {
 		destroy() {
