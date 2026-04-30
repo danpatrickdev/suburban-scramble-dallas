@@ -151,6 +151,7 @@ export class GameScene extends Phaser.Scene {
 		};
 	};
 	private spineRosieMissingFrames = 0;
+	private spineFrameCount = 0;
 
 	private renderSpineTest() {
 		console.log('[spineTest] starting');
@@ -177,14 +178,27 @@ export class GameScene extends Phaser.Scene {
 
 	private createSpineRosie(banner?: Phaser.GameObjects.Text) {
 		const sceneAny = this as unknown as {
-			add: { spine?: (x: number, y: number, dataKey: string, atlasKey: string) => unknown };
+			add: { spine?: (x: number, y: number, dataKey: string, atlasKey: string, boundsProvider?: unknown) => unknown };
 		};
 		if (!sceneAny.add.spine) {
 			banner?.setText('[SPINE] FAIL — add.spine not available').setColor('#ff3b5c');
 			return;
 		}
 		try {
-			const rosie = sceneAny.add.spine(this.player.x, this.player.y, 'rosie-data', 'rosie-atlas') as typeof this.spineRosie;
+			// Use SkinsAndAnimationBoundsProvider so bones that extend during animation
+			// are accounted for — fixes false camera-culling that hides her mid-anim.
+			let bp: unknown = undefined;
+			try {
+				const w = window as unknown as {
+					spine?: { SkinsAndAnimationBoundsProvider?: new (a: string | null) => unknown };
+				};
+				if (w.spine?.SkinsAndAnimationBoundsProvider) {
+					bp = new w.spine.SkinsAndAnimationBoundsProvider(null);
+				}
+			} catch {
+				// fall back to default
+			}
+			const rosie = sceneAny.add.spine(this.player.x, this.player.y, 'rosie-data', 'rosie-atlas', bp) as typeof this.spineRosie;
 			if (!rosie) throw new Error('add.spine returned undefined');
 			rosie.setScale(0.35);
 			rosie.setDepth(200);
@@ -192,13 +206,13 @@ export class GameScene extends Phaser.Scene {
 			rosie.setAlpha(1);
 			rosie.setActive(true);
 			rosie.animationState?.setAnimation(0, 'idle', true);
-			// Disable camera culling — the Spine bounds calculation can falsely cull
-			// when bones extend outside the setup-pose bounding box during animation.
-			(rosie as { ignoreDestroy?: boolean; cullDistance?: number }).cullDistance = 0;
+			// Anchor to world, not camera. Belt-and-suspenders: also disable culling.
+			(rosie as { setScrollFactor?: (x: number, y: number) => unknown }).setScrollFactor?.(1, 1);
+			(rosie as { cullDistance?: number }).cullDistance = 0;
 			this.spineRosie = rosie;
 			(this.player as Phaser.GameObjects.Sprite).setAlpha(0);
 			banner?.setText('[SPINE] OK — Rosie rigged');
-			console.log('[spineTest] Rosie created at', this.player.x, this.player.y);
+			console.log('[spineTest] Rosie created at', this.player.x, this.player.y, '| boundsProvider:', bp ? 'SkinsAndAnimation' : 'SetupPose (fallback)');
 		} catch (err) {
 			banner?.setText('[SPINE] FAIL — ' + (err as Error).message).setColor('#ff3b5c');
 			console.error('[spineTest] create failed:', err);
@@ -261,20 +275,34 @@ export class GameScene extends Phaser.Scene {
 
 		if (this.boss) this.boss.tick(deltaSec, scrollSpeed);
 
-		// Spine Rosie: aggressive defense against silent disappearance.
+		// Spine Rosie: aggressive defense + diagnostics
 		if (this.registry.get('spineTest') && this.player && this.player.active) {
 			const r = this.spineRosie;
+			this.spineFrameCount++;
+
+			// 60-frame heartbeat: dump full state so we can see what's happening
+			if (this.spineFrameCount % 60 === 0) {
+				if (r) {
+					console.log(
+						`[spineTest] hb#${this.spineFrameCount}: pos=(${Math.round(r.x)},${Math.round(r.y)}) ` +
+						`active=${r.active} visible=${r.visible} alpha=${r.alpha} ` +
+						`anim=${r.animationState?.tracks?.[0]?.animation?.name ?? '?'} ` +
+						`player=(${Math.round(this.player.x)},${Math.round(this.player.y)},alpha=${(this.player as Phaser.GameObjects.Sprite).alpha})`
+					);
+				} else {
+					console.warn(`[spineTest] hb#${this.spineFrameCount}: spineRosie is null`);
+				}
+			}
+
 			const aliveAndVisible = r && r.active && r.visible && r.alpha > 0;
 			if (!aliveAndVisible) {
 				this.spineRosieMissingFrames++;
 				if (this.spineRosieMissingFrames > 3) {
-					console.warn('[spineTest] Rosie was missing — recreating');
+					console.warn(
+						`[spineTest] Rosie missing — recreating (state: r=${!!r} active=${r?.active} visible=${r?.visible} alpha=${r?.alpha})`
+					);
 					if (r) {
-						try {
-							(r as Phaser.GameObjects.GameObject).destroy();
-						} catch {
-							/* already gone */
-						}
+						try { (r as Phaser.GameObjects.GameObject).destroy(); } catch { /* ignore */ }
 					}
 					this.spineRosie = undefined;
 					this.spineRosieMissingFrames = 0;
@@ -282,7 +310,6 @@ export class GameScene extends Phaser.Scene {
 				}
 			} else {
 				this.spineRosieMissingFrames = 0;
-				// Force visibility every frame as a safety against external state changes
 				if (r.alpha !== 1) r.setAlpha(1);
 				if (!r.visible) r.setVisible(true);
 				r.setPosition(this.player.x, this.player.y);
