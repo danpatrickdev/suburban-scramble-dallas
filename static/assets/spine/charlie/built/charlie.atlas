@@ -1,0 +1,69 @@
+charlie.png
+size: 1024,1024
+pma: true
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+body
+  rotate: false
+  xy: 2, 2
+  size: 256, 256
+  orig: 256, 256
+  offset: 0, 0
+  index: -1
+ear-left
+  rotate: false
+  xy: 260, 2
+  size: 256, 256
+  orig: 256, 256
+  offset: 0, 0
+  index: -1
+ear-right
+  rotate: false
+  xy: 518, 2
+  size: 256, 256
+  orig: 256, 256
+  offset: 0, 0
+  index: -1
+head
+  rotate: false
+  xy: 2, 260
+  size: 256, 256
+  orig: 256, 256
+  offset: 0, 0
+  index: -1
+leg-back-left
+  rotate: false
+  xy: 260, 260
+  size: 256, 256
+  orig: 256, 256
+  offset: 0, 0
+  index: -1
+leg-back-right
+  rotate: false
+  xy: 518, 260
+  size: 256, 256
+  orig: 256, 256
+  offset: 0, 0
+  index: -1
+leg-front-left
+  rotate: false
+  xy: 2, 518
+  size: 256, 256
+  orig: 256, 256
+  offset: 0, 0
+  index: -1
+leg-front-right
+  rotate: false
+  xy: 260, 518
+  size: 256, 256
+  orig: 256, 256
+  offset: 0, 0
+  index: -1
+tail
+  rotate: false
+  xy: 518, 518
+  size: 256, 256
+  orig: 256, 256
+  offset: 0, 0
+  index: -1

@@ -1,0 +1,48 @@
+influencer.png
+size: 1024,1024
+pma: true
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+arm-phone
+  rotate: false
+  xy: 2, 2
+  size: 256, 256
+  orig: 256, 256
+  offset: 0, 0
+  index: -1
+body
+  rotate: false
+  xy: 260, 2
+  size: 256, 256
+  orig: 256, 256
+  offset: 0, 0
+  index: -1
+hair-back
+  rotate: false
+  xy: 518, 2
+  size: 256, 256
+  orig: 256, 256
+  offset: 0, 0
+  index: -1
+head
+  rotate: false
+  xy: 2, 260
+  size: 256, 256
+  orig: 256, 256
+  offset: 0, 0
+  index: -1
+legs
+  rotate: false
+  xy: 260, 260
+  size: 256, 256
+  orig: 256, 256
+  offset: 0, 0
+  index: -1
+phone
+  rotate: false
+  xy: 518, 260
+  size: 256, 256
+  orig: 256, 256
+  offset: 0, 0
+  index: -1

@@ -135,15 +135,14 @@ export class GameScene extends Phaser.Scene {
 		this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
 			for (const fn of this.cleanupHandlers) fn();
 			this.cleanupHandlers = [];
-			// Ensure the Spine overlay doesn't outlive the scene
-			if (this.spineRosie) {
-				try {
-					(this.spineRosie as Phaser.GameObjects.GameObject).destroy();
-				} catch {
-					// already destroyed
+			// Ensure Spine overlays don't outlive the scene
+			for (const ref of [this.spineRosie, this.spineBoss]) {
+				if (ref) {
+					try { (ref as Phaser.GameObjects.GameObject).destroy(); } catch { /* ignored */ }
 				}
-				this.spineRosie = undefined;
 			}
+			this.spineRosie = undefined;
+			this.spineBoss = undefined;
 		});
 
 		if (this.registry.get('spineTest')) {
@@ -152,42 +151,36 @@ export class GameScene extends Phaser.Scene {
 	}
 
 	private spineRosie?: SpineCharacterObject;
+	private spineBoss?: SpineCharacterObject;
 
 	private renderSpineTest() {
-		console.log('[spineTest] starting');
 		const sceneAny = this as unknown as {
 			add: { spine?: (x: number, y: number, dataKey: string, atlasKey: string) => unknown };
-			spine?: unknown;
 		};
-		console.log('[spineTest] add.spine type:', typeof sceneAny.add.spine, '| this.spine:', !!sceneAny.spine);
-
 		const banner = this.add.text(8, 8, '[SPINE] booting...', {
 			fontFamily: 'monospace',
 			fontSize: '11px',
 			color: '#88e1ff',
 			backgroundColor: '#0c0e14'
 		}).setDepth(1000);
-
 		if (!sceneAny.add.spine) {
-			banner.setText('[SPINE] FAIL — add.spine not available (plugin not registered)').setColor('#ff3b5c');
+			banner.setText('[SPINE] FAIL — plugin not registered').setColor('#ff3b5c');
 			return;
 		}
-
-		this.createSpineRosie(banner);
+		this.createSpinePlayer(banner);
 	}
 
-	private createSpineRosie(banner?: Phaser.GameObjects.Text) {
+	private createSpinePlayer(banner?: Phaser.GameObjects.Text) {
 		const sceneAny = this as unknown as {
 			add: { spine?: (x: number, y: number, dataKey: string, atlasKey: string, boundsProvider?: unknown) => unknown };
 		};
-		if (!sceneAny.add.spine) {
-			banner?.setText('[SPINE] FAIL — add.spine not available').setColor('#ff3b5c');
-			return;
-		}
+		if (!sceneAny.add.spine) return;
+		const id = this.characterId;
+		// Per-character scale: cats are smallest, dogs medium, humans largest.
+		const SCALE: Record<CharacterId, number> = {
+			rosie: 0.35, charlie: 0.42, katie: 0.42, tia: 0.32, nancy: 0.28
+		};
 		try {
-			// Use SkinsAndAnimationBoundsProvider so bones that extend during animation
-			// are accounted for. Pulled from the registry (PhaserGame.ts stores the
-			// module after dynamic import).
 			let bp: unknown = undefined;
 			const spineModule = this.registry.get('spineModule') as
 				| { SkinsAndAnimationBoundsProvider?: new (a: string | null) => unknown }
@@ -195,17 +188,45 @@ export class GameScene extends Phaser.Scene {
 			if (spineModule?.SkinsAndAnimationBoundsProvider) {
 				bp = new spineModule.SkinsAndAnimationBoundsProvider(null);
 			}
-			const rosie = sceneAny.add.spine(this.player.x, this.player.y, 'rosie-data', 'rosie-atlas', bp) as SpineCharacterObject;
-			if (!rosie) throw new Error('add.spine returned undefined');
-			rosie.setScale(0.35);
-			rosie.setDepth(200);
-			rosie.animationState?.setAnimation(0, 'idle', true);
-			this.spineRosie = rosie;
+			const obj = sceneAny.add.spine(this.player.x, this.player.y, `${id}-data`, `${id}-atlas`, bp) as SpineCharacterObject;
+			if (!obj) throw new Error('add.spine returned undefined');
+			obj.setScale(SCALE[id] ?? 0.35);
+			obj.setDepth(200);
+			obj.animationState?.setAnimation(0, 'idle', true);
+			this.spineRosie = obj;
 			(this.player as Phaser.GameObjects.Sprite).setAlpha(0);
-			banner?.setText('[SPINE] OK — Rosie rigged');
+			banner?.setText(`[SPINE] OK — ${id} rigged`);
 		} catch (err) {
 			banner?.setText('[SPINE] FAIL — ' + (err as Error).message).setColor('#ff3b5c');
 			console.error('[spineTest] create failed:', err);
+		}
+	}
+
+	private createSpineBoss() {
+		if (!this.boss) return;
+		const sceneAny = this as unknown as {
+			add: { spine?: (x: number, y: number, dataKey: string, atlasKey: string, boundsProvider?: unknown) => unknown };
+		};
+		if (!sceneAny.add.spine) return;
+		try {
+			let bp: unknown = undefined;
+			const spineModule = this.registry.get('spineModule') as
+				| { SkinsAndAnimationBoundsProvider?: new (a: string | null) => unknown }
+				| undefined;
+			if (spineModule?.SkinsAndAnimationBoundsProvider) {
+				bp = new spineModule.SkinsAndAnimationBoundsProvider(null);
+			}
+			const sb = sceneAny.add.spine(this.boss.x, this.boss.y, 'influencer-data', 'influencer-atlas', bp) as SpineCharacterObject;
+			if (!sb) return;
+			sb.setScale(0.45);
+			sb.setDepth(7);
+			sb.animationState?.setAnimation(0, 'idle', true);
+			this.spineBoss = sb;
+			// Hide the legacy boss sprite — Spine takes over rendering, but the
+			// physics body / phone hitbox stay alive on the original GameObject.
+			(this.boss as Phaser.GameObjects.Sprite).setAlpha(0);
+		} catch (err) {
+			console.error('[spineTest] boss create failed:', err);
 		}
 	}
 
@@ -274,6 +295,11 @@ export class GameScene extends Phaser.Scene {
 			const current = r.animationState?.tracks?.[0]?.animation?.name;
 			if (current !== desired) r.animationState?.setAnimation(0, desired, true);
 		}
+
+		const sb = this.spineBoss;
+		if (sb && this.boss && this.boss.active) {
+			sb.setPosition(this.boss.x, this.boss.y);
+		}
 	}
 
 	spawnBoss() {
@@ -283,6 +309,11 @@ export class GameScene extends Phaser.Scene {
 			.circle(this.boss.phoneX(), this.boss.phoneY(), 22, 0xff3333, 0)
 			.setStrokeStyle(2, 0xff3333, 0.8)
 			.setDepth(9);
+
+		// Spine overlay for the boss when ?spine is enabled
+		if (this.registry.get('spineTest') && this.boss) {
+			this.createSpineBoss();
+		}
 
 		this.physics.add.overlap(this.player, this.boss, () => this.player.takeDamage(1));
 		// Projectiles damage the boss's phone hitbox

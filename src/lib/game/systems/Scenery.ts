@@ -43,16 +43,22 @@ export class Scenery {
 
 	private spawnRandom() {
 		const r = Math.random();
-		if (r < 0.16) this.spawnHighRise();
-		else if (r < 0.28) this.spawnRestaurant();
-		else if (r < 0.40) this.spawnBrickMailbox();
-		else if (r < 0.50) this.spawnConstructionCrane();
-		else if (r < 0.60) this.spawnTree();
-		else if (r < 0.70) this.spawnLampPost();
-		else if (r < 0.78) this.spawnBench();
-		else if (r < 0.86) this.spawnFirePit();
-		else if (r < 0.95) this.spawnJoggerSilhouette();
-		else this.spawnSign();
+		// Landmarks: rare, full-width, high-impact "you are here" props.
+		if (r < 0.018) return this.spawnReverchonParkSign();
+		if (r < 0.034) return this.spawnPedestrianBridge();
+		if (r < 0.050) return this.spawnThomsenOverlook();
+		if (r < 0.060) return this.spawnUptownSkyline();
+		// Common props.
+		if (r < 0.18) return this.spawnHighRise();
+		if (r < 0.30) return this.spawnRestaurant();
+		if (r < 0.42) return this.spawnBrickMailbox();
+		if (r < 0.52) return this.spawnConstructionCrane();
+		if (r < 0.62) return this.spawnTree();
+		if (r < 0.72) return this.spawnLampPost();
+		if (r < 0.80) return this.spawnBench();
+		if (r < 0.87) return this.spawnFirePit();
+		if (r < 0.95) return this.spawnJoggerSilhouette();
+		return this.spawnSign();
 	}
 
 	private nextSidePick(): Side {
@@ -284,6 +290,156 @@ export class Scenery {
 		g.setPosition(0, -22);
 		g.setDepth(-1);
 		this.props.push({ gfx: g, speedMult: 1.18 });
+	}
+
+	// ── Landmarks (Katy Trail-specific, rare) ──────────────────────────────
+
+	// Reverchon Park entrance: wide green-and-stone monument sign across the
+	// grass. Real Katy Trail enters Reverchon at Maple Ave; the sign is a
+	// stacked stone base with a wooden plaque.
+	private spawnReverchonParkSign() {
+		const g = this.scene.add.graphics();
+		const w = 96;
+		const x = (GAME_WIDTH - w) / 2;
+		// Stacked stone base
+		g.fillStyle(0x7a7066, 1);
+		g.fillRect(x, 16, w, 14);
+		g.fillStyle(0x9a8e80, 1);
+		for (let i = 0; i < 4; i++) g.fillRect(x + i * 24 + 2, 18, 20, 4);
+		for (let i = 0; i < 4; i++) g.fillRect(x + i * 24 + 14, 24, 20, 4);
+		// Wooden plaque
+		g.fillStyle(0x6a4226, 1);
+		g.fillRect(x + 6, 0, w - 12, 16);
+		// Plaque trim
+		g.fillStyle(0x4a2a16, 1);
+		g.fillRect(x + 6, 0, w - 12, 2);
+		g.fillRect(x + 6, 14, w - 12, 2);
+		// "REVERCHON PARK" pseudo-text in cream pixels
+		g.fillStyle(0xfff5d8, 1);
+		// "REVERCHON" — 9 letters, two pixels each
+		const letters1 = 9;
+		for (let i = 0; i < letters1; i++) {
+			const lx = x + 12 + i * 7;
+			g.fillRect(lx, 4, 4, 5);
+		}
+		// "PARK" — 4 letters
+		for (let i = 0; i < 4; i++) {
+			const lx = x + 30 + i * 7;
+			g.fillRect(lx, 10, 4, 3);
+		}
+		g.setPosition(0, -34);
+		g.setDepth(-2);
+		this.props.push({ gfx: g, speedMult: 1 });
+	}
+
+	// Knox St pedestrian bridge: wide wooden deck spanning the full trail
+	// with side rails and supports. Real bridge is over Knox-Henderson.
+	private spawnPedestrianBridge() {
+		const g = this.scene.add.graphics();
+		const deckH = 22;
+		// Side stone abutments
+		g.fillStyle(0x6a6068, 1);
+		g.fillRect(0, 0, 40, deckH);
+		g.fillRect(GAME_WIDTH - 40, 0, 40, deckH);
+		g.fillStyle(0x504650, 1);
+		for (let r = 4; r < deckH; r += 6) {
+			g.fillRect(0, r, 40, 1);
+			g.fillRect(GAME_WIDTH - 40, r, 40, 1);
+		}
+		// Deck (brown wooden planks across trail)
+		g.fillStyle(0x8a5a36, 1);
+		g.fillRect(40, 4, GAME_WIDTH - 80, deckH - 8);
+		// Plank lines
+		g.fillStyle(0x6a4226, 1);
+		for (let px = 44; px < GAME_WIDTH - 44; px += 12) {
+			g.fillRect(px, 4, 1, deckH - 8);
+		}
+		// Top rail
+		g.fillStyle(0x4a3216, 1);
+		g.fillRect(40, 0, GAME_WIDTH - 80, 3);
+		// Bottom rail
+		g.fillRect(40, deckH - 3, GAME_WIDTH - 80, 3);
+		// Posts along rail
+		for (let px = 60; px < GAME_WIDTH - 50; px += 50) {
+			g.fillStyle(0x4a3216, 1);
+			g.fillRect(px, 0, 3, 3);
+			g.fillRect(px, deckH - 3, 3, 3);
+		}
+		g.setPosition(0, -deckH - 30);
+		g.setDepth(-1);
+		this.props.push({ gfx: g, speedMult: 1 });
+	}
+
+	// Thomsen Overlook plaza: circular paved overlook with a bronze plaque
+	// on a low wall. Sits on one side of the trail.
+	private spawnThomsenOverlook() {
+		const g = this.scene.add.graphics();
+		const side = this.nextSidePick();
+		const w = 72;
+		const x = side === 'left' ? 4 : GAME_WIDTH - w - 4;
+		// Paved circular plaza (ellipse to suggest perspective)
+		g.fillStyle(0xb8a890, 1);
+		g.fillEllipse(x + w / 2, 22, w, 28);
+		g.fillStyle(0x9a8c78, 1);
+		g.fillEllipse(x + w / 2, 24, w - 8, 22);
+		// Brick edging
+		g.fillStyle(0x7a4a36, 1);
+		for (let a = 0; a < Math.PI * 2; a += Math.PI / 8) {
+			const px = x + w / 2 + Math.cos(a) * (w / 2 - 1);
+			const py = 22 + Math.sin(a) * 13;
+			g.fillRect(px - 1, py - 1, 3, 2);
+		}
+		// Low stone wall with plaque
+		g.fillStyle(0x6a6068, 1);
+		g.fillRect(x + 14, 0, w - 28, 12);
+		// Bronze plaque
+		g.fillStyle(0xb89048, 1);
+		g.fillRect(x + 22, 3, w - 44, 6);
+		g.fillStyle(0x6a5028, 1);
+		g.fillRect(x + 24, 5, 4, 1);
+		g.fillRect(x + 30, 5, 6, 1);
+		g.fillRect(x + 38, 5, 4, 1);
+		g.fillRect(x + 24, 7, 8, 1);
+		g.setPosition(0, -40);
+		g.setDepth(-2);
+		this.props.push({ gfx: g, speedMult: 1 });
+	}
+
+	// Uptown skyline: full-width silhouette of distant skyscrapers. Slow
+	// parallax (deep background) so it feels far away and persistent.
+	private spawnUptownSkyline() {
+		const g = this.scene.add.graphics();
+		const buildings: Array<[number, number, number]> = [
+			// [x, height, hue-tier]
+			[0, 70, 0], [44, 110, 1], [82, 90, 0], [118, 130, 2],
+			[160, 78, 0], [200, 150, 2], [248, 88, 1], [288, 116, 1],
+			[332, 96, 0], [372, 140, 2], [420, 86, 0], [460, 108, 1],
+			[504, 74, 0]
+		];
+		const palette = [0x1a2238, 0x232c4a, 0x2c365a];
+		for (const [bx, bh, tier] of buildings) {
+			const bw = bx + 36 < GAME_WIDTH ? Phaser.Math.Between(28, 40) : 30;
+			g.fillStyle(palette[tier], 1);
+			g.fillRect(bx, 160 - bh, bw, bh);
+			// Tiny window dots
+			g.fillStyle(0xffd180, 0.55);
+			for (let wy = 162 - bh; wy < 156; wy += 9) {
+				for (let wx = bx + 4; wx < bx + bw - 4; wx += 7) {
+					if (((wy * 7 + wx * 3) & 7) < 3) g.fillRect(wx, wy, 2, 2);
+				}
+			}
+			// Antenna on tallest tier
+			if (tier === 2) {
+				g.fillStyle(0x14182a, 1);
+				g.fillRect(bx + bw / 2 - 1, 160 - bh - 8, 2, 8);
+				g.fillStyle(0xff3b5c, 0.8);
+				g.fillRect(bx + bw / 2 - 1, 160 - bh - 9, 2, 2);
+			}
+		}
+		g.setPosition(0, -180);
+		g.setDepth(-5);
+		// Very slow parallax (far horizon)
+		this.props.push({ gfx: g, speedMult: 0.35 });
 	}
 
 	private spawnSign() {

@@ -1,0 +1,376 @@
+{
+  "skeleton": {
+    "hash": "c7aff46093621426afc3",
+    "spine": "4.2.0",
+    "x": -160,
+    "y": 0,
+    "width": 320,
+    "height": 480,
+    "images": "./images/"
+  },
+  "bones": [
+    {
+      "name": "root"
+    },
+    {
+      "name": "torso",
+      "parent": "root",
+      "x": 0,
+      "y": 0,
+      "length": 80
+    },
+    {
+      "name": "legs",
+      "parent": "torso",
+      "x": 0,
+      "y": -50,
+      "length": 50
+    },
+    {
+      "name": "head",
+      "parent": "torso",
+      "x": 0,
+      "y": 80,
+      "length": 60
+    },
+    {
+      "name": "hair-back",
+      "parent": "head",
+      "x": 0,
+      "y": -40,
+      "length": 80
+    },
+    {
+      "name": "arm",
+      "parent": "torso",
+      "x": 35,
+      "y": 30,
+      "length": 70
+    },
+    {
+      "name": "phone",
+      "parent": "arm",
+      "x": 0,
+      "y": 60,
+      "length": 30
+    }
+  ],
+  "slots": [
+    {
+      "name": "hair-back",
+      "bone": "hair-back",
+      "attachment": "hair-back"
+    },
+    {
+      "name": "legs",
+      "bone": "legs",
+      "attachment": "legs"
+    },
+    {
+      "name": "arm",
+      "bone": "arm",
+      "attachment": "arm-phone"
+    },
+    {
+      "name": "torso",
+      "bone": "torso",
+      "attachment": "body"
+    },
+    {
+      "name": "head",
+      "bone": "head",
+      "attachment": "head"
+    },
+    {
+      "name": "phone",
+      "bone": "phone",
+      "attachment": "phone"
+    }
+  ],
+  "skins": [
+    {
+      "name": "default",
+      "attachments": {
+        "hair-back": {
+          "hair-back": {
+            "width": 256,
+            "height": 256,
+            "x": 0,
+            "y": 0
+          }
+        },
+        "legs": {
+          "legs": {
+            "width": 256,
+            "height": 256,
+            "x": 0,
+            "y": 0
+          }
+        },
+        "arm": {
+          "arm-phone": {
+            "width": 256,
+            "height": 256,
+            "x": 0,
+            "y": 0
+          }
+        },
+        "torso": {
+          "body": {
+            "width": 256,
+            "height": 256,
+            "x": 0,
+            "y": 0
+          }
+        },
+        "head": {
+          "head": {
+            "width": 256,
+            "height": 256,
+            "x": 0,
+            "y": 0
+          }
+        },
+        "phone": {
+          "phone": {
+            "width": 256,
+            "height": 256,
+            "x": 0,
+            "y": 0
+          }
+        }
+      }
+    }
+  ],
+  "animations": {
+    "idle": {
+      "bones": {
+        "torso": {
+          "rotate": [
+            {
+              "time": 0,
+              "angle": 0
+            },
+            {
+              "time": 0.8,
+              "angle": 1.5,
+              "curve": [
+                0.25,
+                0,
+                0.75,
+                1
+              ]
+            },
+            {
+              "time": 1.6,
+              "angle": 0,
+              "curve": [
+                0.25,
+                0,
+                0.75,
+                1
+              ]
+            }
+          ],
+          "translate": [
+            {
+              "time": 0,
+              "x": 0,
+              "y": 0
+            },
+            {
+              "time": 0.8,
+              "x": 0,
+              "y": 1.5
+            },
+            {
+              "time": 1.6,
+              "x": 0,
+              "y": 0
+            }
+          ]
+        },
+        "head": {
+          "rotate": [
+            {
+              "time": 0,
+              "angle": 0
+            },
+            {
+              "time": 0.96,
+              "angle": -2.0,
+              "curve": [
+                0.25,
+                0,
+                0.75,
+                1
+              ]
+            },
+            {
+              "time": 1.6,
+              "angle": 0,
+              "curve": [
+                0.25,
+                0,
+                0.75,
+                1
+              ]
+            }
+          ]
+        }
+      }
+    },
+    "selfie": {
+      "bones": {
+        "arm": {
+          "rotate": [
+            {
+              "time": 0,
+              "angle": 0
+            },
+            {
+              "time": 0.35,
+              "angle": 12
+            },
+            {
+              "time": 0.9,
+              "angle": 0
+            }
+          ]
+        },
+        "phone": {
+          "rotate": [
+            {
+              "time": 0,
+              "angle": 0
+            },
+            {
+              "time": 0.35,
+              "angle": -8
+            },
+            {
+              "time": 0.9,
+              "angle": 0
+            }
+          ]
+        },
+        "head": {
+          "rotate": [
+            {
+              "time": 0,
+              "angle": 0
+            },
+            {
+              "time": 0.4,
+              "angle": 4
+            },
+            {
+              "time": 0.9,
+              "angle": 0
+            }
+          ]
+        }
+      }
+    },
+    "photo": {
+      "bones": {
+        "torso": {
+          "scale": [
+            {
+              "time": 0,
+              "x": 1,
+              "y": 1
+            },
+            {
+              "time": 0.08,
+              "x": 1.18,
+              "y": 0.92
+            },
+            {
+              "time": 0.25,
+              "x": 1,
+              "y": 1
+            }
+          ]
+        },
+        "phone": {
+          "scale": [
+            {
+              "time": 0,
+              "x": 1,
+              "y": 1
+            },
+            {
+              "time": 0.08,
+              "x": 1.4,
+              "y": 1.4
+            },
+            {
+              "time": 0.25,
+              "x": 1,
+              "y": 1
+            }
+          ]
+        },
+        "hair-back": {
+          "rotate": [
+            {
+              "time": 0,
+              "angle": 0
+            },
+            {
+              "time": 0.1,
+              "angle": -8
+            },
+            {
+              "time": 0.25,
+              "angle": 0
+            }
+          ]
+        }
+      }
+    },
+    "hit": {
+      "bones": {
+        "head": {
+          "translate": [
+            {
+              "time": 0,
+              "x": 0,
+              "y": 0
+            },
+            {
+              "time": 0.08,
+              "x": 0,
+              "y": -10
+            },
+            {
+              "time": 0.3,
+              "x": 0,
+              "y": 0
+            }
+          ]
+        },
+        "torso": {
+          "translate": [
+            {
+              "time": 0,
+              "x": 0,
+              "y": 0
+            },
+            {
+              "time": 0.08,
+              "x": 0,
+              "y": -4
+            },
+            {
+              "time": 0.3,
+              "x": 0,
+              "y": 0
+            }
+          ]
+        }
+      }
+    }
+  }
+}

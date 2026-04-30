@@ -68,11 +68,10 @@ export class BootScene extends Phaser.Scene {
 				spineJson?: (key: string, url: string) => void;
 				spineAtlas?: (key: string, url: string, premultipliedAlpha?: boolean) => void;
 			};
-			loader.spineJson?.('rosie-data', 'assets/spine/rosie/built/rosie.json');
-			// Atlas is now properly premultiplied (by scripts/spine/pma_fix.py) and
-			// declares pma:true. Both Phaser and Spine Web Player will read the
-			// directive and apply the correct blend mode automatically.
-			loader.spineAtlas?.('rosie-atlas', 'assets/spine/rosie/built/rosie.atlas');
+			for (const id of [...CHARACTER_IDS, 'influencer'] as const) {
+				loader.spineJson?.(`${id}-data`, `assets/spine/${id}/built/${id}.json`);
+				loader.spineAtlas?.(`${id}-atlas`, `assets/spine/${id}/built/${id}.atlas`);
+			}
 		}
 	}
 
