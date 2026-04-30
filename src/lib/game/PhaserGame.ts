@@ -27,11 +27,6 @@ export async function startGame(
 	const useSpine = spineTestEnabled();
 	const SpinePluginModule = useSpine ? await import('@esotericsoftware/spine-phaser') : null;
 
-	if (useSpine) {
-		console.log('[spine] window.Phaser set, plugin module:', SpinePluginModule ? 'loaded' : 'missing');
-		console.log('[spine] SpinePlugin export:', typeof (SpinePluginModule as { SpinePlugin?: unknown })?.SpinePlugin);
-	}
-
 	const config: Phaser.Types.Core.GameConfig = {
 		// spine-phaser's WebGL renderer path is the supported one. Force WEBGL when in spine mode.
 		type: useSpine ? Phaser.WEBGL : Phaser.AUTO,

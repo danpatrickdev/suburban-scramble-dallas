@@ -25,3 +25,4 @@ vite.config.ts.timestamp-*
 # Local-only authoring tooling (Genielabs Spine skill, etc.)
 # Cloned per-developer by following docs/SPINE_PIPELINE.md
 /tools
+.claude/
