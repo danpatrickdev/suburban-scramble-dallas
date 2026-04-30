@@ -118,6 +118,37 @@ export class GameScene extends Phaser.Scene {
 			for (const fn of this.cleanupHandlers) fn();
 			this.cleanupHandlers = [];
 		});
+
+		if (this.registry.get('spineTest')) {
+			this.renderSpineTest();
+		}
+	}
+
+	private renderSpineTest() {
+		const sceneAny = this as unknown as {
+			add: { spine?: (x: number, y: number, dataKey: string, atlasKey: string) => unknown };
+		};
+		if (!sceneAny.add.spine) {
+			console.warn('[spineTest] Spine plugin not loaded; skipping');
+			return;
+		}
+		try {
+			const spineboy = sceneAny.add.spine(GAME_WIDTH / 2, GAME_HEIGHT - 80, 'spineboy-data', 'spineboy-atlas') as Phaser.GameObjects.GameObject & {
+				setScale: (s: number) => unknown;
+				setDepth: (d: number) => unknown;
+				animationState?: { setAnimation: (track: number, name: string, loop: boolean) => unknown };
+			};
+			spineboy.setScale(0.4);
+			spineboy.setDepth(20);
+			spineboy.animationState?.setAnimation(0, 'portal', true);
+			this.add.text(8, 8, 'SPINE TEST — spineboy / track: portal', {
+				fontFamily: 'monospace',
+				fontSize: '10px',
+				color: '#88e1ff'
+			}).setDepth(100);
+		} catch (err) {
+			console.error('[spineTest] failed to render Spineboy:', err);
+		}
 	}
 
 	private spawnPlayer(id: CharacterId): Player {

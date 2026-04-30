@@ -60,6 +60,18 @@ export class BootScene extends Phaser.Scene {
 
 		// Tiles
 		this.load.image(katyTrail.tileKey, katyTrail.tilePath);
+
+		// Optional Spine test asset — loaded only when the SpinePlugin is registered
+		// (PhaserGame.ts toggles via ?spine URL flag).
+		if (this.registry.get('spineTest')) {
+			// `spine.SpinePlugin` exposes loader methods on `this.load.spine*`.
+			const loader = this.load as Phaser.Loader.LoaderPlugin & {
+				spineJson?: (key: string, url: string) => void;
+				spineAtlas?: (key: string, url: string) => void;
+			};
+			loader.spineJson?.('spineboy-data', 'assets/spine/spineboy/spineboy-pro.json');
+			loader.spineAtlas?.('spineboy-atlas', 'assets/spine/spineboy/spineboy.atlas');
+		}
 	}
 
 	create() {

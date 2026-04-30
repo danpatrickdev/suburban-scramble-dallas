@@ -6,6 +6,11 @@ export interface RunningGame {
 	destroy(): void;
 }
 
+function spineTestEnabled(): boolean {
+	if (typeof window === 'undefined') return false;
+	return new URLSearchParams(window.location.search).has('spine');
+}
+
 export async function startGame(
 	parent: HTMLElement,
 	character: CharacterId,
@@ -14,6 +19,8 @@ export async function startGame(
 	const Phaser = (await import('phaser')).default;
 	const { BootScene } = await import('./scenes/BootScene');
 	const { GameScene } = await import('./scenes/GameScene');
+	const useSpine = spineTestEnabled();
+	const SpinePluginModule = useSpine ? await import('@esotericsoftware/spine-phaser') : null;
 
 	const config: Phaser.Types.Core.GameConfig = {
 		type: Phaser.AUTO,
@@ -21,9 +28,11 @@ export async function startGame(
 		width: GAME_WIDTH,
 		height: GAME_HEIGHT,
 		backgroundColor: '#0c0e14',
-		pixelArt: true,
-		antialias: false,
-		roundPixels: true,
+		// Pixel-art mode globally crisps up sprites; with Spine we want smooth vector
+		// scaling. Default to pixel-art unless ?spine is in the URL.
+		pixelArt: !useSpine,
+		antialias: useSpine,
+		roundPixels: !useSpine,
 		scale: {
 			mode: Phaser.Scale.FIT,
 			autoCenter: Phaser.Scale.CENTER_BOTH
@@ -33,12 +42,24 @@ export async function startGame(
 			arcade: { gravity: { x: 0, y: 0 }, debug: false }
 		},
 		fps: { target: 60, forceSetTimeOut: false },
-		scene: [BootScene, GameScene]
+		scene: [BootScene, GameScene],
+		plugins: useSpine && SpinePluginModule
+			? {
+				scene: [
+					{
+						key: 'spine.SpinePlugin',
+						plugin: SpinePluginModule.SpinePlugin,
+						mapping: 'spine'
+					}
+				]
+			}
+			: undefined
 	};
 
 	const game = new Phaser.Game(config);
 	game.registry.set('character', character);
 	game.registry.set('difficulty', difficulty);
+	game.registry.set('spineTest', useSpine);
 
 	return {
 		destroy() {
