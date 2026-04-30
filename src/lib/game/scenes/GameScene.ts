@@ -125,28 +125,48 @@ export class GameScene extends Phaser.Scene {
 	}
 
 	private renderSpineTest() {
+		console.log('[spineTest] starting');
 		const sceneAny = this as unknown as {
 			add: { spine?: (x: number, y: number, dataKey: string, atlasKey: string) => unknown };
+			spine?: unknown;
+			cache?: { custom?: unknown };
+			textures?: { exists?: (key: string) => boolean };
 		};
+		console.log('[spineTest] add.spine type:', typeof sceneAny.add.spine, '| this.spine:', !!sceneAny.spine);
+
+		// Status banner so the user sees state even if Spineboy fails to render
+		const banner = this.add.text(8, 8, '[SPINE] booting...', {
+			fontFamily: 'monospace',
+			fontSize: '11px',
+			color: '#88e1ff',
+			backgroundColor: '#0c0e14'
+		}).setDepth(1000);
+
 		if (!sceneAny.add.spine) {
+			banner.setText('[SPINE] FAIL — add.spine not available (plugin not registered)').setColor('#ff3b5c');
 			console.warn('[spineTest] Spine plugin not loaded; skipping');
 			return;
 		}
+
 		try {
-			const spineboy = sceneAny.add.spine(GAME_WIDTH / 2, GAME_HEIGHT - 80, 'spineboy-data', 'spineboy-atlas') as Phaser.GameObjects.GameObject & {
+			const spineboy = sceneAny.add.spine(
+				GAME_WIDTH / 2,
+				GAME_HEIGHT - 120,
+				'spineboy-data',
+				'spineboy-atlas'
+			) as Phaser.GameObjects.GameObject & {
 				setScale: (s: number) => unknown;
 				setDepth: (d: number) => unknown;
 				animationState?: { setAnimation: (track: number, name: string, loop: boolean) => unknown };
+				skeleton?: { setSkinByName?: (n: string) => unknown };
 			};
-			spineboy.setScale(0.4);
-			spineboy.setDepth(20);
+			spineboy.setScale(0.5);
+			spineboy.setDepth(1000);
 			spineboy.animationState?.setAnimation(0, 'portal', true);
-			this.add.text(8, 8, 'SPINE TEST — spineboy / track: portal', {
-				fontFamily: 'monospace',
-				fontSize: '10px',
-				color: '#88e1ff'
-			}).setDepth(100);
+			banner.setText('[SPINE] OK — spineboy playing portal');
+			console.log('[spineTest] Spineboy rendered at', GAME_WIDTH / 2, GAME_HEIGHT - 120);
 		} catch (err) {
+			banner.setText('[SPINE] FAIL — see console: ' + (err as Error).message).setColor('#ff3b5c');
 			console.error('[spineTest] failed to render Spineboy:', err);
 		}
 	}
