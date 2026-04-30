@@ -943,28 +943,51 @@ end
 -- TILE — Katy Trail (64x64 seamless)
 -- ============================================================================
 
+-- Real Katy Trail (Dallas): 12-ft concrete path for cyclists/skaters, with an
+-- 8-ft crushed-granite (tan) soft path alongside for pedestrians, separated by
+-- a thin grass strip. No road yellow line (it isn't a road).
 local function drawKatyTrailTile(img)
     local W = img.width; local H = img.height
     local concrete_d = rgb(150, 148, 138)
-    local concrete = rgb(178, 176, 165)
+    local concrete   = rgb(178, 176, 165)
     local concrete_h = rgb(200, 198, 188)
-    local grass = rgb(58, 130, 52)
-    local grass_d = rgb(38, 100, 36)
-    local grass_h = rgb(98, 168, 80)
-    local yellow = rgb(240, 200, 30)
-    local yellow_d = rgb(180, 145, 20)
-    local crack = rgb(120, 118, 110)
+    local granite_d  = rgb(168, 142, 100)  -- crushed granite (tan)
+    local granite    = rgb(196, 170, 124)
+    local granite_h  = rgb(220, 196, 152)
+    local grass      = rgb(58, 130, 52)
+    local grass_d    = rgb(38, 100, 36)
+    local grass_h    = rgb(98, 168, 80)
+    local divider    = rgb(46, 110, 42)    -- grass strip between paths
+
+    -- Path layout (60% concrete on left, 6% grass divider, 28% granite on right, ~3% grass margin each side):
+    local concreteStart = math.floor(W * 0.06)
+    local concreteEnd   = math.floor(W * 0.50)   -- 12-ft cycle path
+    local dividerStart  = concreteEnd
+    local dividerEnd    = math.floor(W * 0.56)
+    local graniteStart  = dividerEnd
+    local graniteEnd    = math.floor(W * 0.94)   -- 8-ft pedestrian path
 
     for y = 0, H - 1 do
         for x = 0, W - 1 do
-            if x >= 12 and x <= W - 13 then
-                -- Concrete path with subtle noise
+            if x >= concreteStart and x < concreteEnd then
+                -- Concrete cycle path with subtle noise
                 local n = ((x * 31 + y * 17) % 13)
                 if n < 4 then pset(img, x, y, concrete_d)
                 elseif n > 9 then pset(img, x, y, concrete_h)
                 else pset(img, x, y, concrete) end
+            elseif x >= dividerStart and x < dividerEnd then
+                -- Grass divider
+                local n = ((x * 7 + y * 11) % 5)
+                if n == 0 then pset(img, x, y, divider)
+                else pset(img, x, y, grass) end
+            elseif x >= graniteStart and x < graniteEnd then
+                -- Crushed granite pedestrian path with grain
+                local n = ((x * 19 + y * 23) % 11)
+                if n < 3 then pset(img, x, y, granite_d)
+                elseif n > 8 then pset(img, x, y, granite_h)
+                else pset(img, x, y, granite) end
             else
-                -- Grass with subtle variation
+                -- Outer grass margins
                 local n = ((x * 7 + y * 11) % 7)
                 if n == 0 then pset(img, x, y, grass_d)
                 elseif n == 1 then pset(img, x, y, grass_h)
@@ -972,33 +995,40 @@ local function drawKatyTrailTile(img)
             end
         end
     end
-    -- Concrete crack lines
-    for x = 0, W - 1 do
-        pset(img, x, 0, concrete_d)
-        pset(img, x, H - 1, concrete_d)
-    end
-    -- Yellow center line (dashed, seamless top/bottom)
-    for y = 0, H - 1 do
-        if (y % 16) < 8 then
-            rect(img, W / 2 - 1, y, 3, 1, yellow)
-            pset(img, W / 2 - 1, y, yellow_d)
-            pset(img, W / 2 + 1, y, yellow_d)
+
+    -- Expansion joints across concrete (every 24 px, horizontal seams)
+    for y = 0, H - 1, 24 do
+        for x = concreteStart, concreteEnd - 1 do
+            pset(img, x, y, concrete_d)
         end
     end
-    -- Random pebbles in grass (seeded so seamless)
-    local seed = 17
-    for i = 1, 12 do
+
+    -- Granite path subtle pebbles
+    local seed = 41
+    for i = 1, 18 do
         seed = (seed * 31 + 7) % 1009
-        local x = (seed * 13) % W
+        local x = graniteStart + (seed * 7) % (graniteEnd - graniteStart)
         local y = (seed * 19) % H
-        if x < 11 or x > W - 12 then
-            pset(img, x, y, rgb(220, 220, 215))
-        end
+        pset(img, x, y, granite_h)
+        pset(img, x + 1, y, granite_h)
     end
-    -- Grass tufts on edges
-    for x = 0, W - 1, 5 do
-        pset(img, x % 11 + 4, x % H, grass_h)
-        pset(img, W - 1 - (x % 11 + 4), (x + 13) % H, grass_h)
+
+    -- Outer grass tufts (seeded, seamless)
+    seed = 17
+    for i = 1, 14 do
+        seed = (seed * 29 + 11) % 1009
+        local x = (seed * 13) % concreteStart
+        local y = (seed * 19) % H
+        pset(img, x, y, grass_h)
+        pset(img, x + 1, y + 1, grass_d)
+    end
+    seed = 23
+    for i = 1, 14 do
+        seed = (seed * 31 + 13) % 1009
+        local x = graniteEnd + (seed * 7) % (W - graniteEnd)
+        local y = (seed * 17) % H
+        pset(img, x, y, grass_h)
+        pset(img, x + 1, y + 1, grass_d)
     end
 end
 

@@ -117,6 +117,15 @@ export class GameScene extends Phaser.Scene {
 		this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
 			for (const fn of this.cleanupHandlers) fn();
 			this.cleanupHandlers = [];
+			// Ensure the Spine overlay doesn't outlive the scene
+			if (this.spineRosie) {
+				try {
+					(this.spineRosie as Phaser.GameObjects.GameObject).destroy();
+				} catch {
+					// already destroyed
+				}
+				this.spineRosie = undefined;
+			}
 		});
 
 		if (this.registry.get('spineTest')) {
@@ -158,13 +167,14 @@ export class GameScene extends Phaser.Scene {
 			const rosie = sceneAny.add.spine(this.player.x, this.player.y, 'rosie-data', 'rosie-atlas') as typeof this.spineRosie;
 			if (!rosie) throw new Error('add.spine returned undefined');
 			rosie.setScale(0.35);
-			rosie.setDepth(15);
+			// Depth 200 is well above scenery (-3..-1), tiles (-1000), enemies (5),
+			// player (10), boss (8). Keeps Rosie always visible.
+			rosie.setDepth(200);
 			rosie.animationState?.setAnimation(0, 'idle', true);
 			this.spineRosie = rosie;
-			// Hide the pixel-art player sprite so we only see the Spine version
 			(this.player as Phaser.GameObjects.Sprite).setAlpha(0);
 			banner.setText('[SPINE] OK — Rosie rigged, playing idle');
-			console.log('[spineTest] Rosie spine object created');
+			console.log('[spineTest] Rosie spine object created at', this.player.x, this.player.y);
 		} catch (err) {
 			banner.setText('[SPINE] FAIL — see console: ' + (err as Error).message).setColor('#ff3b5c');
 			console.error('[spineTest] failed to render Rosie:', err);

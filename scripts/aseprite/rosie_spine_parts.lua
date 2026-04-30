@@ -172,69 +172,98 @@ local function drawBody(img)
     outlinePass(img, 5, C.outline)
 end
 
--- Head (top-down): mostly black with a vertical white blaze, two amber eyes,
--- a black nose pointing UP (forward in our scrolling shooter).
--- Pivot at bottom-center (where neck joins body).
+-- Head (top-down view, refined to match real-Rosie photo): wide white blaze,
+-- amber eyes, big pink-lined ears as part of the head silhouette, tongue out.
 local function drawHead(img)
     local cx = PART_W / 2
     local cy = PART_H / 2
-    -- Black head (oval with snout extending up)
-    ellipse(img, cx, cy + 10, 64, 70, C.black)
-    -- Snout pushing forward (up)
-    ellipse(img, cx, cy - 50, 30, 36, C.black)
-    -- White blaze down center
-    rect(img, cx - 12, cy - 80, 24, 110, C.white)
-    -- Blaze taper at top (snout tip)
-    triangle(img, cx - 14, cy - 70, cx + 14, cy - 70, cx, cy - 90, C.white)
-    -- Eyes (amber)
-    ellipse(img, cx - 26, cy - 16, 8, 10, C.amber)
-    ellipse(img, cx + 26, cy - 16, 8, 10, C.amber)
-    -- Pupils (black)
-    ellipse(img, cx - 26, cy - 14, 4, 5, C.black)
-    ellipse(img, cx + 26, cy - 14, 4, 5, C.black)
-    -- Eye shines (white)
-    ellipse(img, cx - 28, cy - 18, 2, 2, C.white)
-    ellipse(img, cx + 24, cy - 18, 2, 2, C.white)
-    -- Eyebrows (subtle amber strokes)
-    line(img, cx - 32, cy - 28, cx - 20, cy - 26, C.amber_h, 2)
-    line(img, cx + 20, cy - 26, cx + 32, cy - 28, C.amber_h, 2)
-    -- Nose (black triangle at snout tip)
-    triangle(img, cx - 8, cy - 78, cx + 8, cy - 78, cx, cy - 70, C.nose)
-    -- Mouth (small line below nose)
-    line(img, cx - 6, cy - 64, cx, cy - 62, C.outline, 2)
-    line(img, cx, cy - 62, cx + 6, cy - 64, C.outline, 2)
-    -- Pink tongue tip
-    pset(img, cx, cy - 60, C.pink)
-    pset(img, cx - 1, cy - 60, C.pink)
-    pset(img, cx + 1, cy - 60, C.pink)
-    -- Outline
+    -- Black head dome (rounder, more like a real BC skull)
+    ellipse(img, cx, cy + 8, 70, 76, C.black)
+    -- Snout extending forward (up) — narrower and longer
+    ellipse(img, cx, cy - 55, 26, 38, C.black)
+    -- Connect head to snout (cheek shape)
+    ellipse(img, cx, cy - 28, 36, 28, C.black)
+    -- WIDE white blaze covering most of the muzzle and dropping into chest
+    rect(img, cx - 16, cy - 86, 32, 120, C.white)
+    -- Blaze taper at top (rounded snout tip)
+    ellipse(img, cx, cy - 86, 16, 8, C.white)
+    -- Snout shadow on edges of blaze
+    rect(img, cx - 17, cy - 60, 1, 50, C.white_s)
+    rect(img, cx + 16, cy - 60, 1, 50, C.white_s)
+    -- Eyes (amber, slightly almond-shaped, set wider apart)
+    ellipse(img, cx - 28, cy - 12, 9, 11, C.amber)
+    ellipse(img, cx + 28, cy - 12, 9, 11, C.amber)
+    -- Pupils (black, small)
+    ellipse(img, cx - 27, cy - 10, 4, 5, C.black)
+    ellipse(img, cx + 29, cy - 10, 4, 5, C.black)
+    -- Eye shines (white, top-left of pupil)
+    pset(img, cx - 29, cy - 14, C.white)
+    pset(img, cx - 28, cy - 14, C.white)
+    pset(img, cx + 27, cy - 14, C.white)
+    pset(img, cx + 28, cy - 14, C.white)
+    -- Eyebrow ridges (subtle, gives expression)
+    line(img, cx - 34, cy - 24, cx - 22, cy - 22, C.outline, 2)
+    line(img, cx + 22, cy - 22, cx + 34, cy - 24, C.outline, 2)
+    -- Black nose (proper triangle at snout tip)
+    triangle(img, cx - 9, cy - 80, cx + 9, cy - 80, cx, cy - 70, C.nose)
+    -- Nose highlight
+    pset(img, cx - 2, cy - 78, C.black_h)
+    pset(img, cx + 2, cy - 78, C.black_h)
+    -- Mouth (open, smiling)
+    line(img, cx - 7, cy - 62, cx, cy - 56, C.outline, 2)
+    line(img, cx, cy - 56, cx + 7, cy - 62, C.outline, 2)
+    -- BIG pink tongue dangling out (signature happy-BC look)
+    -- Tongue base
+    ellipse(img, cx, cy - 55, 7, 5, C.pink)
+    -- Tongue body extending DOWN below the snout
+    rect(img, cx - 5, cy - 52, 10, 18, C.pink)
+    -- Rounded tip
+    ellipse(img, cx, cy - 32, 6, 5, C.pink)
+    -- Tongue centerline (darker pink groove)
+    line(img, cx, cy - 53, cx, cy - 36, C.pink_d, 1)
+    -- Tongue highlight
+    rect(img, cx - 3, cy - 50, 1, 12, rgb(245, 165, 180))
+    -- Outline pass last (gives Pajama Sam thick black lines)
     outlinePass(img, 5, C.outline)
 end
 
--- Ear (single, left or right). Pivot at bottom-inner corner (where ear meets head).
--- Drawing the LEFT ear; the right is just a horizontal flip in the rig.
+-- Ear (single, left or right). Real-Rosie ears are BIG and pointy with very
+-- visible pink interior. Pivot at bottom-inner corner.
 local function drawEar(img, mirrorX)
     mirrorX = mirrorX or false
     local cx = PART_W / 2
     local cy = PART_H / 2
-    -- A pricked triangular ear pointing up-and-out
-    local x0, y0 = cx + 30, cy + 70  -- inner-bottom (pivot)
-    local x1, y1 = cx - 30, cy + 30  -- outer-bottom
-    local x2, y2 = cx - 5,  cy - 70  -- top point
+    -- Bigger, sharper triangle pointing up-and-out
+    local x0, y0 = cx + 38, cy + 80  -- inner-bottom (pivot, where it meets head)
+    local x1, y1 = cx - 36, cy + 40  -- outer-bottom
+    local x2, y2 = cx - 2,  cy - 90  -- top point (sharp tip)
     if mirrorX then
         x0 = PART_W - x0
         x1 = PART_W - x1
         x2 = PART_W - x2
     end
+    -- Black outer ear
     triangle(img, x0, y0, x1, y1, x2, y2, C.black)
-    -- Inner pink fold
+    -- Big pink inner fold (real Rosie has a lot of visible pink)
     local function lerp(a, b, t) return a + (b - a) * t end
     triangle(img,
-        lerp(x0, x2, 0.15), lerp(y0, y2, 0.15),
-        lerp(x1, x2, 0.30), lerp(y1, y2, 0.30),
-        lerp(x0, x2, 0.85), lerp(y0, y2, 0.85),
+        lerp(x0, x2, 0.18), lerp(y0, y2, 0.18),
+        lerp(x1, x2, 0.32), lerp(y1, y2, 0.32),
+        lerp(x0, x2, 0.78), lerp(y0, y2, 0.78),
         C.pink)
-    outlinePass(img, 5, C.outline)
+    -- Inner pink shadow (deeper pink near base of ear interior)
+    triangle(img,
+        lerp(x0, x2, 0.20), lerp(y0, y2, 0.20),
+        lerp(x1, x2, 0.30), lerp(y1, y2, 0.30),
+        lerp(x0, x2, 0.45), lerp(y0, y2, 0.45),
+        C.pink_d)
+    -- Fluffy fur tufts at the base (real Rosie has those!)
+    local baseX1, baseY1 = lerp(x0, x1, 0.5), lerp(y0, y1, 0.5)
+    pset(img, math.floor(baseX1 - 4), math.floor(baseY1 + 2), C.black)
+    pset(img, math.floor(baseX1 + 4), math.floor(baseY1 + 2), C.black)
+    pset(img, math.floor(baseX1 - 8), math.floor(baseY1 + 6), C.black)
+    pset(img, math.floor(baseX1 + 8), math.floor(baseY1 + 6), C.black)
+    outlinePass(img, 6, C.outline)
 end
 
 -- Tail (long, with white tip). Pivot at thick base.
