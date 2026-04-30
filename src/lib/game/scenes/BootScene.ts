@@ -69,8 +69,9 @@ export class BootScene extends Phaser.Scene {
 				spineJson?: (key: string, url: string) => void;
 				spineAtlas?: (key: string, url: string) => void;
 			};
-			loader.spineJson?.('spineboy-data', 'assets/spine/spineboy/spineboy-pro.json');
-			loader.spineAtlas?.('spineboy-atlas', 'assets/spine/spineboy/spineboy.atlas');
+			// Rosie — our actual character, rigged via the Genielabs pipeline
+			loader.spineJson?.('rosie-data', 'assets/spine/rosie/built/rosie.json');
+			loader.spineAtlas?.('rosie-atlas', 'assets/spine/rosie/built/rosie.atlas');
 		}
 	}
 

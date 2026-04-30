@@ -124,17 +124,24 @@ export class GameScene extends Phaser.Scene {
 		}
 	}
 
+	private spineRosie?: Phaser.GameObjects.GameObject & {
+		setPosition: (x: number, y: number) => unknown;
+		setScale: (s: number) => unknown;
+		setDepth: (d: number) => unknown;
+		animationState?: {
+			setAnimation: (track: number, name: string, loop: boolean) => unknown;
+			tracks?: Array<{ animation?: { name?: string } }>;
+		};
+	};
+
 	private renderSpineTest() {
 		console.log('[spineTest] starting');
 		const sceneAny = this as unknown as {
 			add: { spine?: (x: number, y: number, dataKey: string, atlasKey: string) => unknown };
 			spine?: unknown;
-			cache?: { custom?: unknown };
-			textures?: { exists?: (key: string) => boolean };
 		};
 		console.log('[spineTest] add.spine type:', typeof sceneAny.add.spine, '| this.spine:', !!sceneAny.spine);
 
-		// Status banner so the user sees state even if Spineboy fails to render
 		const banner = this.add.text(8, 8, '[SPINE] booting...', {
 			fontFamily: 'monospace',
 			fontSize: '11px',
@@ -144,30 +151,23 @@ export class GameScene extends Phaser.Scene {
 
 		if (!sceneAny.add.spine) {
 			banner.setText('[SPINE] FAIL — add.spine not available (plugin not registered)').setColor('#ff3b5c');
-			console.warn('[spineTest] Spine plugin not loaded; skipping');
 			return;
 		}
 
 		try {
-			const spineboy = sceneAny.add.spine(
-				GAME_WIDTH / 2,
-				GAME_HEIGHT - 120,
-				'spineboy-data',
-				'spineboy-atlas'
-			) as Phaser.GameObjects.GameObject & {
-				setScale: (s: number) => unknown;
-				setDepth: (d: number) => unknown;
-				animationState?: { setAnimation: (track: number, name: string, loop: boolean) => unknown };
-				skeleton?: { setSkinByName?: (n: string) => unknown };
-			};
-			spineboy.setScale(0.5);
-			spineboy.setDepth(1000);
-			spineboy.animationState?.setAnimation(0, 'portal', true);
-			banner.setText('[SPINE] OK — spineboy playing portal');
-			console.log('[spineTest] Spineboy rendered at', GAME_WIDTH / 2, GAME_HEIGHT - 120);
+			const rosie = sceneAny.add.spine(this.player.x, this.player.y, 'rosie-data', 'rosie-atlas') as typeof this.spineRosie;
+			if (!rosie) throw new Error('add.spine returned undefined');
+			rosie.setScale(0.35);
+			rosie.setDepth(15);
+			rosie.animationState?.setAnimation(0, 'idle', true);
+			this.spineRosie = rosie;
+			// Hide the pixel-art player sprite so we only see the Spine version
+			(this.player as Phaser.GameObjects.Sprite).setAlpha(0);
+			banner.setText('[SPINE] OK — Rosie rigged, playing idle');
+			console.log('[spineTest] Rosie spine object created');
 		} catch (err) {
 			banner.setText('[SPINE] FAIL — see console: ' + (err as Error).message).setColor('#ff3b5c');
-			console.error('[spineTest] failed to render Spineboy:', err);
+			console.error('[spineTest] failed to render Rosie:', err);
 		}
 	}
 
@@ -226,6 +226,16 @@ export class GameScene extends Phaser.Scene {
 		this.combo.tick();
 
 		if (this.boss) this.boss.tick(deltaSec, scrollSpeed);
+
+		if (this.spineRosie && this.player) {
+			this.spineRosie.setPosition(this.player.x, this.player.y);
+			const moving = Math.abs(this.player.body.velocity.x) > 1 || Math.abs(this.player.body.velocity.y) > 1;
+			const desired = moving ? 'walk' : 'idle';
+			const current = this.spineRosie.animationState?.tracks?.[0]?.animation?.name;
+			if (current !== desired) {
+				this.spineRosie.animationState?.setAnimation(0, desired, true);
+			}
+		}
 	}
 
 	spawnBoss() {
