@@ -22,6 +22,24 @@ import { Coffee } from '../entities/enemies/Coffee';
 import type { Enemy } from '../entities/Enemy';
 import { Projectile } from '../entities/Projectile';
 
+type SpineCharacterObject = Phaser.GameObjects.GameObject & {
+	x: number;
+	y: number;
+	active: boolean;
+	visible: boolean;
+	alpha: number;
+	setPosition: (x: number, y: number) => unknown;
+	setScale: (s: number) => unknown;
+	setDepth: (d: number) => unknown;
+	setVisible: (v: boolean) => unknown;
+	setAlpha: (a: number) => unknown;
+	setActive: (a: boolean) => unknown;
+	animationState?: {
+		setAnimation: (track: number, name: string, loop: boolean) => unknown;
+		tracks?: Array<{ animation?: { name?: string } }>;
+	};
+};
+
 export class GameScene extends Phaser.Scene {
 	background!: ScrollingBackground;
 	scenery!: Scenery;
@@ -133,23 +151,7 @@ export class GameScene extends Phaser.Scene {
 		}
 	}
 
-	private spineRosie?: Phaser.GameObjects.GameObject & {
-		x: number;
-		y: number;
-		active: boolean;
-		visible: boolean;
-		alpha: number;
-		setPosition: (x: number, y: number) => unknown;
-		setScale: (s: number) => unknown;
-		setDepth: (d: number) => unknown;
-		setVisible: (v: boolean) => unknown;
-		setAlpha: (a: number) => unknown;
-		setActive: (a: boolean) => unknown;
-		animationState?: {
-			setAnimation: (track: number, name: string, loop: boolean) => unknown;
-			tracks?: Array<{ animation?: { name?: string } }>;
-		};
-	};
+	private spineRosie?: SpineCharacterObject;
 	private spineRosieMissingFrames = 0;
 	private spineFrameCount = 0;
 
@@ -195,7 +197,7 @@ export class GameScene extends Phaser.Scene {
 			if (spineModule?.SkinsAndAnimationBoundsProvider) {
 				bp = new spineModule.SkinsAndAnimationBoundsProvider(null);
 			}
-			const rosie = sceneAny.add.spine(this.player.x, this.player.y, 'rosie-data', 'rosie-atlas', bp) as typeof this.spineRosie;
+			const rosie = sceneAny.add.spine(this.player.x, this.player.y, 'rosie-data', 'rosie-atlas', bp) as SpineCharacterObject;
 			if (!rosie) throw new Error('add.spine returned undefined');
 			rosie.setScale(0.35);
 			rosie.setDepth(200);
