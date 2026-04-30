@@ -9,8 +9,8 @@
     { "name": "torso", "parent": "root", "x": 0, "y": 0, "length": 70 },
     { "name": "leg-left", "parent": "torso", "x": -18, "y": -50, "length": 50 },
     { "name": "leg-right", "parent": "torso", "x": 18, "y": -50, "length": 50 },
-    { "name": "arm-left", "parent": "torso", "x": -42, "y": 10, "length": 50 },
-    { "name": "arm-right", "parent": "torso", "x": 42, "y": 10, "length": 50 },
+    { "name": "arm-left", "parent": "torso", "x": -32, "y": 10, "length": 50 },
+    { "name": "arm-right", "parent": "torso", "x": 32, "y": 10, "length": 50 },
     { "name": "head", "parent": "torso", "x": 0, "y": 70, "length": 50 },
     { "name": "hair-back", "parent": "head", "x": 0, "y": -40, "length": 70 }
   ],
