@@ -1,5 +1,6 @@
 rosie.png
 size: 1024,1024
+pma: true
 format: RGBA8888
 filter: Linear,Linear
 repeat: none

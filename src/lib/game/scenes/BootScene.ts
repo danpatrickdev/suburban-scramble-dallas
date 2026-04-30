@@ -69,10 +69,10 @@ export class BootScene extends Phaser.Scene {
 				spineAtlas?: (key: string, url: string, premultipliedAlpha?: boolean) => void;
 			};
 			loader.spineJson?.('rosie-data', 'assets/spine/rosie/built/rosie.json');
-			// premultipliedAlpha=false — our atlas was packed by Genielabs make_atlas.py
-			// using PIL, which writes straight-alpha PNGs. The Spine plugin defaults
-			// to PMA=true; that mismatch silently renders the skeleton invisible.
-			loader.spineAtlas?.('rosie-atlas', 'assets/spine/rosie/built/rosie.atlas', false);
+			// Atlas is now properly premultiplied (by scripts/spine/pma_fix.py) and
+			// declares pma:true. Both Phaser and Spine Web Player will read the
+			// directive and apply the correct blend mode automatically.
+			loader.spineAtlas?.('rosie-atlas', 'assets/spine/rosie/built/rosie.atlas');
 		}
 	}
 
