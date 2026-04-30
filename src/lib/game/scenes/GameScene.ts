@@ -134,14 +134,23 @@ export class GameScene extends Phaser.Scene {
 	}
 
 	private spineRosie?: Phaser.GameObjects.GameObject & {
+		x: number;
+		y: number;
+		active: boolean;
+		visible: boolean;
+		alpha: number;
 		setPosition: (x: number, y: number) => unknown;
 		setScale: (s: number) => unknown;
 		setDepth: (d: number) => unknown;
+		setVisible: (v: boolean) => unknown;
+		setAlpha: (a: number) => unknown;
+		setActive: (a: boolean) => unknown;
 		animationState?: {
 			setAnimation: (track: number, name: string, loop: boolean) => unknown;
 			tracks?: Array<{ animation?: { name?: string } }>;
 		};
 	};
+	private spineRosieMissingFrames = 0;
 
 	private renderSpineTest() {
 		console.log('[spineTest] starting');
@@ -163,21 +172,36 @@ export class GameScene extends Phaser.Scene {
 			return;
 		}
 
+		this.createSpineRosie(banner);
+	}
+
+	private createSpineRosie(banner?: Phaser.GameObjects.Text) {
+		const sceneAny = this as unknown as {
+			add: { spine?: (x: number, y: number, dataKey: string, atlasKey: string) => unknown };
+		};
+		if (!sceneAny.add.spine) {
+			banner?.setText('[SPINE] FAIL — add.spine not available').setColor('#ff3b5c');
+			return;
+		}
 		try {
 			const rosie = sceneAny.add.spine(this.player.x, this.player.y, 'rosie-data', 'rosie-atlas') as typeof this.spineRosie;
 			if (!rosie) throw new Error('add.spine returned undefined');
 			rosie.setScale(0.35);
-			// Depth 200 is well above scenery (-3..-1), tiles (-1000), enemies (5),
-			// player (10), boss (8). Keeps Rosie always visible.
 			rosie.setDepth(200);
+			rosie.setVisible(true);
+			rosie.setAlpha(1);
+			rosie.setActive(true);
 			rosie.animationState?.setAnimation(0, 'idle', true);
+			// Disable camera culling — the Spine bounds calculation can falsely cull
+			// when bones extend outside the setup-pose bounding box during animation.
+			(rosie as { ignoreDestroy?: boolean; cullDistance?: number }).cullDistance = 0;
 			this.spineRosie = rosie;
 			(this.player as Phaser.GameObjects.Sprite).setAlpha(0);
-			banner.setText('[SPINE] OK — Rosie rigged, playing idle');
-			console.log('[spineTest] Rosie spine object created at', this.player.x, this.player.y);
+			banner?.setText('[SPINE] OK — Rosie rigged');
+			console.log('[spineTest] Rosie created at', this.player.x, this.player.y);
 		} catch (err) {
-			banner.setText('[SPINE] FAIL — see console: ' + (err as Error).message).setColor('#ff3b5c');
-			console.error('[spineTest] failed to render Rosie:', err);
+			banner?.setText('[SPINE] FAIL — ' + (err as Error).message).setColor('#ff3b5c');
+			console.error('[spineTest] create failed:', err);
 		}
 	}
 
@@ -237,13 +261,39 @@ export class GameScene extends Phaser.Scene {
 
 		if (this.boss) this.boss.tick(deltaSec, scrollSpeed);
 
-		if (this.spineRosie && this.player) {
-			this.spineRosie.setPosition(this.player.x, this.player.y);
-			const moving = Math.abs(this.player.body.velocity.x) > 1 || Math.abs(this.player.body.velocity.y) > 1;
-			const desired = moving ? 'walk' : 'idle';
-			const current = this.spineRosie.animationState?.tracks?.[0]?.animation?.name;
-			if (current !== desired) {
-				this.spineRosie.animationState?.setAnimation(0, desired, true);
+		// Spine Rosie: aggressive defense against silent disappearance.
+		if (this.registry.get('spineTest') && this.player && this.player.active) {
+			const r = this.spineRosie;
+			const aliveAndVisible = r && r.active && r.visible && r.alpha > 0;
+			if (!aliveAndVisible) {
+				this.spineRosieMissingFrames++;
+				if (this.spineRosieMissingFrames > 3) {
+					console.warn('[spineTest] Rosie was missing — recreating');
+					if (r) {
+						try {
+							(r as Phaser.GameObjects.GameObject).destroy();
+						} catch {
+							/* already gone */
+						}
+					}
+					this.spineRosie = undefined;
+					this.spineRosieMissingFrames = 0;
+					this.createSpineRosie();
+				}
+			} else {
+				this.spineRosieMissingFrames = 0;
+				// Force visibility every frame as a safety against external state changes
+				if (r.alpha !== 1) r.setAlpha(1);
+				if (!r.visible) r.setVisible(true);
+				r.setPosition(this.player.x, this.player.y);
+				const vx = this.player.body?.velocity.x ?? 0;
+				const vy = this.player.body?.velocity.y ?? 0;
+				const moving = Math.abs(vx) > 1 || Math.abs(vy) > 1;
+				const desired = moving ? 'walk' : 'idle';
+				const current = r.animationState?.tracks?.[0]?.animation?.name;
+				if (current !== desired) {
+					r.animationState?.setAnimation(0, desired, true);
+				}
 			}
 		}
 	}
