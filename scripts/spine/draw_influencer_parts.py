@@ -25,21 +25,22 @@ OUT = Path("static/assets/spine/influencer/parts")
 REF = Path("static/assets/spine/influencer/reference.png")
 W, H = 256, 256
 
-# Palette
-OUTLINE = (15, 15, 18, 255)
-SKIN = (245, 210, 178, 255)
-SKIN_S = (215, 178, 148, 255)
-HAIR = (74, 44, 28, 255)
-HAIR_H = (110, 70, 44, 255)
-PINK = (248, 130, 168, 255)
-PINK_S = (210, 90, 130, 255)
-BLACK = (28, 28, 32, 255)
-BLACK_H = (62, 62, 70, 255)
-WHITE = (250, 250, 248, 255)
-SCREEN = (140, 215, 255, 255)
-GOLD = (255, 196, 80, 255)
-EYE = (40, 28, 22, 255)
-LIP = (200, 80, 100, 255)
+# Palette — saturated cel colors, Humongous Entertainment vibe.
+OUTLINE = (12, 14, 20, 255)
+THICK = 6
+SKIN = (250, 215, 180, 255)
+SKIN_S = (215, 175, 140, 255)
+HAIR = (78, 44, 24, 255)
+HAIR_H = (135, 88, 50, 255)
+PINK = (255, 128, 178, 255)
+PINK_S = (215, 80, 128, 255)
+BLACK = (24, 24, 30, 255)
+BLACK_H = (70, 70, 80, 255)
+WHITE = (252, 252, 250, 255)
+SCREEN = (140, 220, 255, 255)
+GOLD = (255, 200, 70, 255)
+EYE = (38, 26, 20, 255)
+LIP = (220, 70, 96, 255)
 
 
 def new_part() -> Image.Image:
@@ -47,26 +48,35 @@ def new_part() -> Image.Image:
 
 
 def ellipse(img: Image.Image, cx: int, cy: int, rx: int, ry: int, color):
-    d = ImageDraw.Draw(img)
-    d.ellipse([cx - rx, cy - ry, cx + rx, cy + ry], fill=color)
+    # Anti-aliased via 4× supersample, same trick as draw_characters_parts.
+    ss = 4
+    big = Image.new("RGBA", ((rx + 4) * 2 * ss, (ry + 4) * 2 * ss), (0, 0, 0, 0))
+    ImageDraw.Draw(big).ellipse(
+        [4 * ss, 4 * ss, (rx * 2 + 4) * ss, (ry * 2 + 4) * ss],
+        fill=color,
+    )
+    small = big.resize(((rx + 4) * 2, (ry + 4) * 2), Image.LANCZOS)
+    img.alpha_composite(small, (cx - rx - 4, cy - ry - 4))
 
 
-def ellipse_outline(img: Image.Image, cx: int, cy: int, rx: int, ry: int, color, thick=3):
-    d = ImageDraw.Draw(img)
-    for t in range(thick):
-        d.ellipse([cx - rx - t, cy - ry - t, cx + rx + t, cy + ry + t], outline=color)
-
-
-def filled_outlined_ellipse(img, cx, cy, rx, ry, fill, outline=OUTLINE, thick=3):
+def filled_outlined_ellipse(img, cx, cy, rx, ry, fill, outline=OUTLINE, thick=THICK):
     ellipse(img, cx, cy, rx + thick, ry + thick, outline)
     ellipse(img, cx, cy, rx, ry, fill)
+    if fill[3] == 255 and fill != outline:
+        hl = (
+            min(fill[0] + 40, 255),
+            min(fill[1] + 40, 255),
+            min(fill[2] + 40, 255),
+            120,
+        )
+        ellipse(img, cx - rx // 3, cy - ry // 3, max(2, rx // 3), max(2, ry // 3), hl)
 
 
 def rect(img, x, y, w, h, color):
     ImageDraw.Draw(img).rectangle([x, y, x + w - 1, y + h - 1], fill=color)
 
 
-def filled_outlined_rect(img, x, y, w, h, fill, outline=OUTLINE, thick=3):
+def filled_outlined_rect(img, x, y, w, h, fill, outline=OUTLINE, thick=THICK):
     rect(img, x - thick, y - thick, w + thick * 2, h + thick * 2, outline)
     rect(img, x, y, w, h, fill)
 

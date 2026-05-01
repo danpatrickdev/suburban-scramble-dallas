@@ -1,102 +1,104 @@
 #!/usr/bin/env python3
 """
-draw_katy_trail_tile.py — repaint the Katy Trail floor tile in a clean
-2D-animation style. Replaces the noisier pixel-art version with smooth,
-softly textured grass + concrete + crushed-granite paths.
+draw_katy_trail_tile.py — paint the Katy Trail floor tile in a Humongous-
+Entertainment painted-background style: flat saturated color fields, soft
+gradient shading inside the path, crisp dark cel-ink edges, no pixel
+scatter noise.
 
-The tile is 256×256 (4× the previous 64×64 so the texture reads crisper at
-any scale), seamless top↔bottom, lays out:
-  - left grass strip
-  - concrete cycling path with thin yellow centerline
-  - thin grass divider
-  - crushed-granite pedestrian path
-  - right grass strip
-
-Output: static/assets/tiles/katy_trail.png
+Output: static/assets/tiles/katy_trail.png  (256×256 seamless top↔bottom)
 """
 from PIL import Image, ImageDraw, ImageFilter
 from pathlib import Path
-import random
-
-random.seed(42)  # deterministic output
 
 OUT = Path("static/assets/tiles/katy_trail.png")
 W, H = 256, 256
 
-# Layout (column ranges in pixels). Real Katy Trail layout: grass | bike path |
-# tiny divider | pedestrian path | grass.
-GRASS_L_END = 16
+# Layout (column ranges in pixels). Real Katy Trail layout, simplified.
+GRASS_L_END = 18
 BIKE_END = 124
-DIVIDER_END = 132
+DIVIDER_END = 134
 PED_END = 240
-# tail end → grass
+INK = (28, 32, 24, 255)
+
+
+def paint_field(img, x0, x1, base, light, dark):
+    """Fill a vertical strip with flat base color + soft horizontal cel
+    bands of light/dark to suggest painted depth, no per-pixel noise."""
+    d = ImageDraw.Draw(img)
+    d.rectangle([x0, 0, x1 - 1, H - 1], fill=base)
+    # Soft band overlay — wide flat ribbons at fixed Y, slightly lighter
+    # near the top of each tile and slightly darker near the middle.
+    overlay = Image.new("RGBA", (W, H), (0, 0, 0, 0))
+    od = ImageDraw.Draw(overlay)
+    # light band (sun catch)
+    od.rectangle([x0, 18, x1 - 1, 56], fill=(*light[:3], 60))
+    # darker band (shadow seam)
+    od.rectangle([x0, 130, x1 - 1, 168], fill=(*dark[:3], 60))
+    overlay = overlay.filter(ImageFilter.GaussianBlur(14))
+    img.alpha_composite(overlay)
 
 
 def main():
     img = Image.new("RGBA", (W, H), (0, 0, 0, 0))
-    d = ImageDraw.Draw(img)
 
-    # ── Grass base ───────────────────────────────────────────────────────
-    GRASS = (108, 158, 88, 255)
-    GRASS_DARK = (84, 128, 70, 255)
-    GRASS_LIGHT = (132, 180, 104, 255)
-    d.rectangle([0, 0, W - 1, H - 1], fill=GRASS)
+    # ── Grass field ──────────────────────────────────────────────────────
+    GRASS = (88, 156, 78, 255)
+    GRASS_L = (134, 196, 110, 255)
+    GRASS_D = (62, 116, 60, 255)
+    paint_field(img, 0, W, GRASS, GRASS_L, GRASS_D)
 
     # ── Cycling path (concrete) ──────────────────────────────────────────
-    CONCRETE = (212, 210, 200, 255)
-    CONCRETE_S = (188, 186, 178, 255)
-    d.rectangle([GRASS_L_END, 0, BIKE_END - 1, H - 1], fill=CONCRETE)
+    CONCRETE = (220, 218, 208, 255)
+    CONCRETE_L = (240, 238, 228, 255)
+    CONCRETE_D = (188, 184, 170, 255)
+    paint_field(img, GRASS_L_END, BIKE_END, CONCRETE, CONCRETE_L, CONCRETE_D)
 
     # ── Pedestrian path (crushed granite) ────────────────────────────────
-    GRANITE = (210, 180, 140, 255)
-    GRANITE_S = (186, 156, 116, 255)
-    d.rectangle([DIVIDER_END, 0, PED_END - 1, H - 1], fill=GRANITE)
+    GRANITE = (220, 188, 138, 255)
+    GRANITE_L = (240, 212, 168, 255)
+    GRANITE_D = (188, 152, 102, 255)
+    paint_field(img, DIVIDER_END, PED_END, GRANITE, GRANITE_L, GRANITE_D)
 
-    # ── Yellow centerline on the bike path (dashed) ──────────────────────
-    YELLOW = (240, 196, 80, 255)
+    # ── Yellow centerline on the bike path (hand-painted dashes) ─────────
+    d = ImageDraw.Draw(img)
+    YELLOW = (252, 200, 70, 255)
+    YELLOW_S = (200, 144, 38, 255)
     cx_bike = (GRASS_L_END + BIKE_END) // 2
-    for y in range(0, H, 32):
-        d.rectangle([cx_bike - 2, y + 4, cx_bike + 2, y + 24], fill=YELLOW)
+    for y in range(0, H, 36):
+        # Shadow under dash for cel depth
+        d.rounded_rectangle([cx_bike - 3, y + 6, cx_bike + 3, y + 26], radius=2, fill=YELLOW_S)
+        d.rounded_rectangle([cx_bike - 2, y + 5, cx_bike + 2, y + 25], radius=2, fill=YELLOW)
 
-    # ── Subtle concrete shading bands (lateral, 2D-anim cel-shading) ─────
-    for y in range(0, H, 64):
-        d.rectangle([GRASS_L_END, y + 28, BIKE_END - 1, y + 32], fill=CONCRETE_S)
+    # ── Crisp dark cel-ink edges where surfaces meet ─────────────────────
+    edge_pad = 1
+    d.line([(GRASS_L_END, 0), (GRASS_L_END, H)], fill=INK, width=2)
+    d.line([(BIKE_END, 0), (BIKE_END, H)], fill=INK, width=2)
+    d.line([(DIVIDER_END, 0), (DIVIDER_END, H)], fill=INK, width=2)
+    d.line([(PED_END, 0), (PED_END, H)], fill=INK, width=2)
 
-    # ── Granite scatter (cel-shaded gravel dots) ─────────────────────────
-    for _ in range(80):
-        x = random.randint(DIVIDER_END + 4, PED_END - 6)
-        y = random.randint(2, H - 4)
-        size = random.choice([1, 1, 1, 2])
-        c = random.choice([GRANITE_S, (160, 134, 96, 255), (230, 200, 160, 255)])
-        d.rectangle([x, y, x + size, y + size], fill=c)
+    # ── Small painted detail clusters (clumps of grass + gravel pebbles) ─
+    # Far less frequent than the noise scatter; each cluster is a
+    # cel-shaded 2-color blob.
+    def grass_clump(x, y):
+        d.ellipse([x - 4, y - 2, x + 4, y + 2], fill=GRASS_D)
+        d.ellipse([x - 2, y - 4, x + 4, y + 1], fill=GRASS_L)
 
-    # ── Grass texture (cel-shaded blade clusters, no pixel noise) ────────
-    def grass_strip(x0, x1):
-        for _ in range(int((x1 - x0) * 0.6)):
-            x = random.randint(x0, x1 - 2)
-            y = random.randint(0, H - 4)
-            color = random.choice([GRASS_DARK, GRASS_LIGHT, GRASS_LIGHT])
-            d.rectangle([x, y, x + 1, y + 2], fill=color)
+    def pebble(x, y, sz=2):
+        d.ellipse([x - sz, y - sz, x + sz, y + sz], fill=GRANITE_D)
+        d.ellipse([x - sz + 1, y - sz + 1, x, y - 1], fill=GRANITE_L)
 
-    grass_strip(0, GRASS_L_END)
-    grass_strip(BIKE_END, DIVIDER_END)
-    grass_strip(PED_END, W)
-
-    # ── Path edge highlights (sharp 2D-anim line) ────────────────────────
-    EDGE = (60, 70, 50, 220)
-    d.line([(GRASS_L_END, 0), (GRASS_L_END, H)], fill=EDGE, width=1)
-    d.line([(BIKE_END - 1, 0), (BIKE_END - 1, H)], fill=EDGE, width=1)
-    d.line([(DIVIDER_END, 0), (DIVIDER_END, H)], fill=EDGE, width=1)
-    d.line([(PED_END - 1, 0), (PED_END - 1, H)], fill=EDGE, width=1)
-
-    # ── Soft gradient between bike path and grass divider for depth ──────
-    # Slight lighter ribbon down the granite path (sun catches the gravel)
-    SUN = (235, 215, 170, 60)
-    overlay = Image.new("RGBA", (W, H), (0, 0, 0, 0))
-    od = ImageDraw.Draw(overlay)
-    od.rectangle([DIVIDER_END + 6, 0, PED_END - 6, H - 1], fill=SUN)
-    overlay = overlay.filter(ImageFilter.GaussianBlur(8))
-    img = Image.alpha_composite(img, overlay)
+    # Grass clumps in left strip
+    for y in (24, 80, 138, 198):
+        grass_clump(8, y)
+    # Grass clumps in divider
+    for y in (40, 110, 188):
+        grass_clump((BIKE_END + DIVIDER_END) // 2, y)
+    # Grass clumps in right strip
+    for y in (32, 96, 156, 222):
+        grass_clump(W - 8, y)
+    # Painted gravel pebbles in pedestrian path (sparse, intentional)
+    for x, y in [(150, 28), (188, 70), (158, 108), (210, 142), (172, 184), (200, 220)]:
+        pebble(x, y)
 
     OUT.parent.mkdir(parents=True, exist_ok=True)
     img.save(OUT, "PNG")

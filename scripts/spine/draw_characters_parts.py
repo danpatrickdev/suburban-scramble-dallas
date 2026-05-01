@@ -16,7 +16,12 @@ from PIL import Image, ImageDraw
 from pathlib import Path
 
 W, H = 256, 256
-OUTLINE = (15, 15, 18, 255)
+# Pure-black ink line for the cel/Humongous look. Slightly off-black to read
+# softer than #000.
+OUTLINE = (12, 14, 20, 255)
+# Default outline thickness for limbs/heads — chunky enough that even at
+# spine scale 0.50 the line reads as a clean ink contour, not a pixel edge.
+THICK = 6
 
 
 def new_part() -> Image.Image:
@@ -24,19 +29,38 @@ def new_part() -> Image.Image:
 
 
 def ellipse(img, cx, cy, rx, ry, color):
-    ImageDraw.Draw(img).ellipse([cx - rx, cy - ry, cx + rx, cy + ry], fill=color)
+    # Use a 4× supersampled ellipse + downsample so the edge anti-aliases
+    # cleanly into the transparent alpha. Without this, PIL's default
+    # ellipse leaves a stair-stepped edge that reads as "pixel sprite".
+    ss = 4
+    big = Image.new("RGBA", ((rx + 4) * 2 * ss, (ry + 4) * 2 * ss), (0, 0, 0, 0))
+    ImageDraw.Draw(big).ellipse(
+        [4 * ss, 4 * ss, (rx * 2 + 4) * ss, (ry * 2 + 4) * ss],
+        fill=color,
+    )
+    small = big.resize(((rx + 4) * 2, (ry + 4) * 2), Image.LANCZOS)
+    img.alpha_composite(small, (cx - rx - 4, cy - ry - 4))
 
 
-def filled_outlined_ellipse(img, cx, cy, rx, ry, fill, outline=OUTLINE, thick=3):
+def filled_outlined_ellipse(img, cx, cy, rx, ry, fill, outline=OUTLINE, thick=THICK):
     ellipse(img, cx, cy, rx + thick, ry + thick, outline)
     ellipse(img, cx, cy, rx, ry, fill)
+    # Subtle cel highlight — flat-color "shine" on the upper-left of the form.
+    if fill[3] == 255 and fill != outline:
+        hl = (
+            min(fill[0] + 40, 255),
+            min(fill[1] + 40, 255),
+            min(fill[2] + 40, 255),
+            120,
+        )
+        ellipse(img, cx - rx // 3, cy - ry // 3, max(2, rx // 3), max(2, ry // 3), hl)
 
 
 def rect(img, x, y, w, h, color):
     ImageDraw.Draw(img).rectangle([x, y, x + w - 1, y + h - 1], fill=color)
 
 
-def filled_outlined_rect(img, x, y, w, h, fill, outline=OUTLINE, thick=3):
+def filled_outlined_rect(img, x, y, w, h, fill, outline=OUTLINE, thick=THICK):
     rect(img, x - thick, y - thick, w + thick * 2, h + thick * 2, outline)
     rect(img, x, y, w, h, fill)
 
@@ -44,13 +68,13 @@ def filled_outlined_rect(img, x, y, w, h, fill, outline=OUTLINE, thick=3):
 # ── Dog template (Charlie — tri-color stocky border collie) ───────────────
 
 CHARLIE = {
-    "black": (28, 28, 32, 255),
-    "white": (248, 246, 240, 255),
-    "tan": (148, 96, 50, 255),
-    "tan_h": (180, 130, 80, 255),
-    "amber": (255, 176, 0, 255),
-    "pink": (228, 130, 152, 255),
-    "nose": (28, 22, 28, 255),
+    "black": (24, 24, 30, 255),
+    "white": (252, 250, 244, 255),
+    "tan": (164, 100, 48, 255),
+    "tan_h": (200, 145, 88, 255),
+    "amber": (255, 184, 0, 255),
+    "pink": (240, 130, 158, 255),
+    "nose": (24, 18, 24, 255),
 }
 
 
@@ -125,12 +149,12 @@ def charlie_leg(tan=False):
 
 # ── Cat template (Tia / Nancy — earl-grey-and-white) ──────────────────────
 
-CAT_GREY = (140, 143, 149, 255)
-CAT_GREY_H = (180, 183, 189, 255)
-CAT_WHITE = (248, 246, 240, 255)
-CAT_PINK = (228, 130, 152, 255)
-CAT_GREEN_EYE = (96, 200, 130, 255)
-CAT_NOSE = (200, 110, 130, 255)
+CAT_GREY = (148, 152, 162, 255)
+CAT_GREY_H = (192, 196, 204, 255)
+CAT_WHITE = (252, 250, 244, 255)
+CAT_PINK = (240, 130, 158, 255)
+CAT_GREEN_EYE = (96, 210, 138, 255)
+CAT_NOSE = (220, 110, 138, 255)
 
 
 def cat_body(scale=1.0):
@@ -221,15 +245,15 @@ def cat_leg(scale=1.0):
 
 # ── Human (Katie — pink Lululemon, brunette ponytail, Apple Watch) ────────
 
-K_PINK = (248, 130, 168, 255)
-K_PINK_S = (210, 90, 130, 255)
-K_BLACK = (28, 28, 32, 255)
-K_WHITE = (250, 250, 248, 255)
-K_HAIR = (74, 44, 28, 255)
-K_HAIR_H = (110, 70, 44, 255)
-K_SKIN = (245, 210, 178, 255)
-K_SKIN_S = (215, 178, 148, 255)
-K_SCREEN = (140, 215, 255, 255)
+K_PINK = (255, 128, 178, 255)
+K_PINK_S = (215, 80, 128, 255)
+K_BLACK = (24, 24, 30, 255)
+K_WHITE = (252, 252, 250, 255)
+K_HAIR = (78, 44, 24, 255)
+K_HAIR_H = (135, 88, 50, 255)
+K_SKIN = (250, 215, 180, 255)
+K_SKIN_S = (215, 175, 140, 255)
+K_SCREEN = (140, 220, 255, 255)
 
 
 def katie_body():
