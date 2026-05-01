@@ -72,6 +72,144 @@ def aa_ellipse(img: Image.Image, cx: int, cy: int, rx: int, ry: int, color):
     img.alpha_composite(small, (cx - rx - pad, cy - ry - pad))
 
 
+def aa_polygon(img: Image.Image, points: list[tuple[float, float]], color):
+    """Anti-aliased polygon by supersampling + LANCZOS downsample."""
+    if not points:
+        return
+    xs = [p[0] for p in points]
+    ys = [p[1] for p in points]
+    minx, maxx = int(min(xs)) - 4, int(max(xs)) + 4
+    miny, maxy = int(min(ys)) - 4, int(max(ys)) + 4
+    w = maxx - minx
+    h = maxy - miny
+    if w <= 0 or h <= 0:
+        return
+    big = Image.new("RGBA", (w * SS, h * SS), (0, 0, 0, 0))
+    shifted = [((p[0] - minx) * SS, (p[1] - miny) * SS) for p in points]
+    ImageDraw.Draw(big).polygon(shifted, fill=color)
+    small = big.resize((w, h), Image.LANCZOS)
+    img.alpha_composite(small, (minx, miny))
+
+
+def _catmull_rom(p0, p1, p2, p3, t):
+    t2 = t * t
+    t3 = t2 * t
+    x = 0.5 * ((2 * p1[0]) + (-p0[0] + p2[0]) * t +
+               (2*p0[0] - 5*p1[0] + 4*p2[0] - p3[0]) * t2 +
+               (-p0[0] + 3*p1[0] - 3*p2[0] + p3[0]) * t3)
+    y = 0.5 * ((2 * p1[1]) + (-p0[1] + p2[1]) * t +
+               (2*p0[1] - 5*p1[1] + 4*p2[1] - p3[1]) * t2 +
+               (-p0[1] + 3*p1[1] - 3*p2[1] + p3[1]) * t3)
+    return (x, y)
+
+
+def smooth_curve(control_points: list[tuple[float, float]], samples_per_segment: int = 12, closed: bool = True) -> list[tuple[float, float]]:
+    """Catmull-Rom spline through the control points. Returns a dense
+    list of (x, y) coords suitable for filling as a polygon. The curve
+    passes THROUGH each control point with smooth tangents — so giving
+    a few key points produces an organic, hand-drawn-feeling silhouette
+    instead of a stiff ellipse."""
+    n = len(control_points)
+    if n < 3:
+        return list(control_points)
+    out: list[tuple[float, float]] = []
+    if closed:
+        # Wrap indices so the curve closes smoothly.
+        for i in range(n):
+            p0 = control_points[(i - 1) % n]
+            p1 = control_points[i]
+            p2 = control_points[(i + 1) % n]
+            p3 = control_points[(i + 2) % n]
+            for j in range(samples_per_segment):
+                out.append(_catmull_rom(p0, p1, p2, p3, j / samples_per_segment))
+    else:
+        for i in range(n - 1):
+            p0 = control_points[max(0, i - 1)]
+            p1 = control_points[i]
+            p2 = control_points[i + 1]
+            p3 = control_points[min(n - 1, i + 2)]
+            for j in range(samples_per_segment):
+                out.append(_catmull_rom(p0, p1, p2, p3, j / samples_per_segment))
+        out.append(control_points[-1])
+    return out
+
+
+def painted_blob(
+    img: Image.Image,
+    control_points: list[tuple[float, float]],
+    base,
+    *,
+    shadow=None,
+    highlight=None,
+    outline_thick=6,
+    light_dir=(-1, -1),
+):
+    """Paint an organic blob shape from control points (smoothed via
+    Catmull-Rom). Same painted treatment as painted_ellipse: variable-
+    weight ink, base, painted shadow, cel highlight, rim light."""
+    sh = shadow or darken(base, 0.30)
+    hl = highlight or lighten(base, 0.28)
+    rm = lighten(base, 0.55)
+
+    silhouette = smooth_curve(control_points, samples_per_segment=14)
+
+    # Compute centroid for shading offsets
+    cx = sum(p[0] for p in silhouette) / len(silhouette)
+    cy = sum(p[1] for p in silhouette) / len(silhouette)
+    rx = max(p[0] for p in silhouette) - min(p[0] for p in silhouette)
+    ry = max(p[1] for p in silhouette) - min(p[1] for p in silhouette)
+    rx /= 2; ry /= 2
+
+    dx, dy = -light_dir[0], -light_dir[1]
+
+    # Variable-weight ink: thicker shadow-side outline
+    expanded = [
+        (p[0] + (p[0] - cx) * (outline_thick + 2) / max(1, rx) + dx * 1,
+         p[1] + (p[1] - cy) * (outline_thick + 2) / max(1, ry) + dy * 1)
+        for p in silhouette
+    ]
+    aa_polygon(img, expanded, INK)
+    expanded2 = [
+        (p[0] + (p[0] - cx) * (outline_thick - 1) / max(1, rx),
+         p[1] + (p[1] - cy) * (outline_thick - 1) / max(1, ry))
+        for p in silhouette
+    ]
+    aa_polygon(img, expanded2, INK)
+
+    # Base
+    aa_polygon(img, silhouette, base)
+
+    # Painted shadow on the side opposite the light
+    sh_off_x = max(2, int(rx * 0.18)) * dx
+    sh_off_y = max(2, int(ry * 0.18)) * dy
+    sh_pts = [
+        (cx + (p[0] - cx) * 0.82 + sh_off_x,
+         cy + (p[1] - cy) * 0.82 + sh_off_y)
+        for p in silhouette
+    ]
+    aa_polygon(img, sh_pts, (sh[0], sh[1], sh[2], 180))
+
+    # Highlight on the lit side (smaller blob, offset toward light)
+    hl_off_x = max(2, int(rx * 0.22)) * (-dx)
+    hl_off_y = max(2, int(ry * 0.22)) * (-dy)
+    hl_pts = [
+        (cx + (p[0] - cx) * 0.45 + hl_off_x,
+         cy + (p[1] - cy) * 0.45 + hl_off_y)
+        for p in silhouette
+    ]
+    aa_polygon(img, hl_pts, (hl[0], hl[1], hl[2], 200))
+
+    # Rim light: thin bright crescent along the upper edge
+    rim_pts = [
+        (cx + (p[0] - cx) * 0.95 + (-dx) * 1,
+         cy + (p[1] - cy) * 0.95 + (-dy) * 1)
+        for p in silhouette
+        if p[1] < cy + ry * 0.1  # only the upper half
+    ]
+    if len(rim_pts) >= 3:
+        aa_polygon(img, rim_pts, (rm[0], rm[1], rm[2], 90))
+
+
 def aa_rounded_rect(img, x, y, w, h, color, radius=6):
     pad = 4
     big = Image.new("RGBA", ((w + pad * 2) * SS, (h + pad * 2) * SS), (0, 0, 0, 0))
