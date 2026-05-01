@@ -11,58 +11,37 @@ body
   orig: 256, 256
   offset: 0, 0
   index: -1
-ear-left
+ear
   rotate: false
   xy: 260, 2
   size: 256, 256
   orig: 256, 256
   offset: 0, 0
   index: -1
-ear-right
+head
   rotate: false
   xy: 518, 2
   size: 256, 256
   orig: 256, 256
   offset: 0, 0
   index: -1
-head
+legs-back
   rotate: false
   xy: 2, 260
   size: 256, 256
   orig: 256, 256
   offset: 0, 0
   index: -1
-leg-back-left
+legs-front
   rotate: false
   xy: 260, 260
   size: 256, 256
   orig: 256, 256
   offset: 0, 0
   index: -1
-leg-back-right
-  rotate: false
-  xy: 518, 260
-  size: 256, 256
-  orig: 256, 256
-  offset: 0, 0
-  index: -1
-leg-front-left
-  rotate: false
-  xy: 2, 518
-  size: 256, 256
-  orig: 256, 256
-  offset: 0, 0
-  index: -1
-leg-front-right
-  rotate: false
-  xy: 260, 518
-  size: 256, 256
-  orig: 256, 256
-  offset: 0, 0
-  index: -1
 tail
   rotate: false
-  xy: 518, 518
+  xy: 518, 260
   size: 256, 256
   orig: 256, 256
   offset: 0, 0

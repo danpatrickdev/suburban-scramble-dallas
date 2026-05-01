@@ -112,196 +112,244 @@ ROSIE = {
 
 
 def rosie_body():
-    """Lean, athletic border-collie body — narrower than Charlie, more
-    prancing/forward-leaning silhouette."""
+    """SIDE-VIEW border collie body. Dog faces RIGHT (+x). Black saddle
+    over a long sloping back, white chest peeking out below + behind
+    front legs. Bone anchor (0,0 in part canvas) is the center of the
+    torso; head attaches off the front (right side), tail off the back."""
     img = new_part()
     cx, cy = W // 2, H // 2
+    # Body silhouette — long horizontal oval-ish profile, with shoulder
+    # rise toward front (right side) and croup slope toward back (left).
     body_pts = [
-        (cx,       cy - 78),
-        (cx + 30,  cy - 60),
-        (cx + 56,  cy - 18),
-        (cx + 50,  cy + 22),
-        (cx + 28,  cy + 64),
-        (cx,       cy + 72),
-        (cx - 28,  cy + 64),
-        (cx - 50,  cy + 22),
-        (cx - 56,  cy - 18),
-        (cx - 30,  cy - 60),
+        (cx + 50,  cy - 30),  # front shoulder peak (right side)
+        (cx + 70,  cy + 0),   # chest forward
+        (cx + 56,  cy + 30),  # belly front
+        (cx + 20,  cy + 36),
+        (cx - 20,  cy + 32),
+        (cx - 56,  cy + 26),  # belly back
+        (cx - 72,  cy + 0),   # rump back
+        (cx - 64,  cy - 26),  # croup
+        (cx - 30,  cy - 38),
+        (cx + 16,  cy - 38),
+        (cx + 38,  cy - 36),
     ]
     painted_blob(img, body_pts, ROSIE["black"], outline_thick=5)
-    # White chest blaze (organic teardrop)
-    blaze_pts = [
-        (cx,       cy - 30),
-        (cx + 14,  cy - 8),
-        (cx + 18,  cy + 30),
-        (cx + 8,   cy + 60),
-        (cx,       cy + 64),
-        (cx - 8,   cy + 60),
-        (cx - 18,  cy + 30),
-        (cx - 14,  cy - 8),
+    # White chest patch (visible on the underside-front)
+    chest_pts = [
+        (cx + 56,  cy + 6),
+        (cx + 60,  cy + 28),
+        (cx + 30,  cy + 36),
+        (cx + 6,   cy + 32),
+        (cx + 4,   cy + 14),
+        (cx + 30,  cy + 8),
     ]
-    painted_blob(img, blaze_pts, ROSIE["white"], outline_thick=2)
-    # Small fur-tuft accents at the shoulders
-    fur_tuft(img, cx - 50, cy - 48, ROSIE["black"], length=8, dir_x=-1, dir_y=-1)
-    fur_tuft(img, cx + 50, cy - 48, ROSIE["black"], length=8, dir_x=1, dir_y=-1)
+    painted_blob(img, chest_pts, ROSIE["white"], outline_thick=2)
+    # White belly stripe (thin, runs along the underside)
+    belly_pts = [
+        (cx + 40,  cy + 32),
+        (cx + 12,  cy + 36),
+        (cx - 26,  cy + 32),
+        (cx - 40,  cy + 24),
+        (cx - 18,  cy + 26),
+        (cx + 18,  cy + 28),
+    ]
+    painted_blob(img, belly_pts, ROSIE["white"], outline_thick=1)
+    # Subtle fur tuft on the shoulder ridge
+    fur_tuft(img, cx + 46, cy - 32, ROSIE["black"], length=10, dir_x=0, dir_y=-1)
+    fur_tuft(img, cx + 38, cy - 36, ROSIE["black"], length=8, dir_x=1, dir_y=-1)
+    fur_tuft(img, cx - 46, cy - 26, ROSIE["black"], length=8, dir_x=-1, dir_y=-1)
     return img
 
 
 def rosie_head():
-    """Lean BC head with longer pointed snout, alert ears already on
-    separate parts. Expressive amber eyes, pink tongue mid-pant."""
+    """SIDE-3/4 view dog head. Snout points RIGHT, eyes turned slightly
+    toward the camera (3/4 angle). White blaze runs down the muzzle."""
     img = new_part()
     cx, cy = W // 2, H // 2
-    # Skull silhouette — narrower than Charlie's
-    head_pts = [
-        (cx,       cy - 36),
-        (cx + 30,  cy - 24),
-        (cx + 48,  cy + 12),
-        (cx + 38,  cy + 38),
-        (cx + 18,  cy + 52),
-        (cx,       cy + 56),
-        (cx - 18,  cy + 52),
-        (cx - 38,  cy + 38),
-        (cx - 48,  cy + 12),
-        (cx - 30,  cy - 24),
+    # Skull + cheek silhouette
+    skull_pts = [
+        (cx - 30,  cy - 50),  # top-back of skull
+        (cx + 8,   cy - 56),  # top of skull
+        (cx + 28,  cy - 42),
+        (cx + 36,  cy - 14),  # forehead/brow
+        (cx + 20,  cy + 8),   # cheek (where snout meets head)
+        (cx + 4,   cy + 20),  # under-jaw
+        (cx - 18,  cy + 26),  # throat
+        (cx - 38,  cy + 20),
+        (cx - 44,  cy - 4),
+        (cx - 42,  cy - 30),
     ]
-    painted_blob(img, head_pts, ROSIE["black"], outline_thick=5)
-    # Long pointed snout (BC characteristic)
+    painted_blob(img, skull_pts, ROSIE["black"], outline_thick=5)
+    # Long pointed snout extending RIGHT
     snout_pts = [
-        (cx - 18, cy + 36),
-        (cx - 12, cy + 76),
-        (cx - 6,  cy + 102),
-        (cx,      cy + 108),
-        (cx + 6,  cy + 102),
-        (cx + 12, cy + 76),
-        (cx + 18, cy + 36),
+        (cx + 20,  cy - 14),
+        (cx + 80,  cy - 8),   # snout tip
+        (cx + 90,  cy + 6),   # nose tip
+        (cx + 76,  cy + 18),
+        (cx + 28,  cy + 22),
+        (cx + 12,  cy + 14),
     ]
-    painted_blob(img, snout_pts, ROSIE["black"], outline_thick=3)
-    # White muzzle blaze running down the snout
+    painted_blob(img, snout_pts, ROSIE["black"], outline_thick=4)
+    # White blaze running from forehead down the snout
     blaze_pts = [
-        (cx,      cy - 32),
-        (cx + 10, cy - 14),
-        (cx + 9,  cy + 40),
-        (cx + 6,  cy + 80),
-        (cx + 4,  cy + 100),
-        (cx,      cy + 106),
-        (cx - 4,  cy + 100),
-        (cx - 6,  cy + 80),
-        (cx - 9,  cy + 40),
-        (cx - 10, cy - 14),
+        (cx + 4,   cy - 50),
+        (cx + 22,  cy - 30),
+        (cx + 60,  cy - 4),
+        (cx + 80,  cy + 4),
+        (cx + 70,  cy + 14),
+        (cx + 32,  cy + 12),
+        (cx + 14,  cy - 4),
+        (cx,       cy - 24),
+        (cx - 4,   cy - 44),
     ]
     painted_blob(img, blaze_pts, ROSIE["white"], outline_thick=1)
-    # Expressive amber eyes — looking forward
-    expressive_eye(img, cx - 18, cy + 4, size=6, iris_color=ROSIE["amber"], look=(0, 1))
-    expressive_eye(img, cx + 18, cy + 4, size=6, iris_color=ROSIE["amber"], look=(0, 1))
-    # Eyebrow ridges (subtle ink curves over eyes — alert expression)
+    # Expressive amber eye — single (3/4 view shows mainly one eye, the
+    # other is hinted faintly near the back of the skull).
+    expressive_eye(img, cx + 18, cy - 18, size=7, iris_color=ROSIE["amber"], look=(1, 1))
+    # Tiny back-eye hint
+    ellipse(img, cx - 4, cy - 24, 2, 3, OUTLINE)
+    # Brow line for personality
     d = ImageDraw.Draw(img)
-    d.arc([cx - 26, cy - 8, cx - 10, cy + 6], start=200, end=340, fill=OUTLINE, width=2)
-    d.arc([cx + 10, cy - 8, cx + 26, cy + 6], start=200, end=340, fill=OUTLINE, width=2)
-    # Heart-ish nose
+    d.line([(cx + 8, cy - 28), (cx + 28, cy - 26)], fill=OUTLINE, width=2)
+    # Heart-ish black nose at snout tip
     nose_pts = [
-        (cx,      cy + 78),
-        (cx + 8,  cy + 72),
-        (cx + 7,  cy + 86),
-        (cx,      cy + 92),
-        (cx - 7,  cy + 86),
-        (cx - 8,  cy + 72),
+        (cx + 80,  cy - 4),
+        (cx + 92,  cy + 0),
+        (cx + 90,  cy + 12),
+        (cx + 80,  cy + 14),
+        (cx + 72,  cy + 6),
     ]
     painted_blob(img, nose_pts, ROSIE["nose"], outline_thick=2)
-    # Tongue (slight pant)
+    # Mouth line — slight smile, tongue peeking
+    d.arc([cx + 36, cy + 10, cx + 70, cy + 26], start=20, end=160, fill=OUTLINE, width=2)
+    # Pink tongue lolling
     tongue_pts = [
-        (cx - 4, cy + 96),
-        (cx + 4, cy + 96),
-        (cx + 4, cy + 110),
-        (cx,     cy + 116),
-        (cx - 4, cy + 110),
+        (cx + 50, cy + 18),
+        (cx + 62, cy + 18),
+        (cx + 60, cy + 30),
+        (cx + 52, cy + 32),
     ]
-    painted_blob(img, tongue_pts, ROSIE["pink"], outline_thick=2)
-    # Mouth line
-    d.arc([cx - 10, cy + 88, cx + 10, cy + 102], start=20, end=160, fill=OUTLINE, width=2)
+    painted_blob(img, tongue_pts, ROSIE["pink"], outline_thick=1)
     return img
 
 
-def rosie_ear(side: str):
-    """Pointy alert ear, asymmetric — one ear slightly perked higher."""
+def rosie_ear():
+    """Two alert ears on top of the head, side-view. Front ear larger
+    (closer to camera), back ear smaller and partially hidden."""
     img = new_part()
     cx, cy = W // 2, H // 2
-    sign = -1 if side == "left" else 1
-    perked = 0 if side == "left" else -4  # right ear slightly more alert
-    ear_pts = [
-        (cx,                  cy - 30 + perked),  # tip
-        (cx + 12 * sign,      cy - 14),
-        (cx + 14 * sign,      cy + 8),
-        (cx + 8 * sign,       cy + 18),
-        (cx,                  cy + 14),
-        (cx - 6 * sign,       cy + 8),
-        (cx - 10 * sign,      cy - 6),
+    # Front (camera-facing) ear
+    front_pts = [
+        (cx + 8,   cy - 56),  # tip
+        (cx + 24,  cy - 40),
+        (cx + 26,  cy - 12),
+        (cx + 14,  cy + 4),
+        (cx,       cy - 4),
+        (cx - 4,   cy - 22),
     ]
-    painted_blob(img, ear_pts, ROSIE["black"], outline_thick=4)
-    # Pink inner ear
-    inner_pts = [
-        (cx + 1 * sign,       cy - 18 + perked),
-        (cx + 6 * sign,       cy - 6),
-        (cx + 4 * sign,       cy + 8),
-        (cx,                  cy + 8),
-        (cx - 4 * sign,       cy + 2),
+    painted_blob(img, front_pts, ROSIE["black"], outline_thick=4)
+    # Front ear inner pink
+    front_inner = [
+        (cx + 8,   cy - 44),
+        (cx + 18,  cy - 30),
+        (cx + 16,  cy - 8),
+        (cx + 4,   cy - 4),
+        (cx - 2,   cy - 22),
     ]
-    painted_blob(img, inner_pts, ROSIE["pink"], outline_thick=1)
+    painted_blob(img, front_inner, ROSIE["pink"], outline_thick=1)
+    # Back ear (smaller, behind/up)
+    back_pts = [
+        (cx - 16,  cy - 50),  # tip (behind front ear)
+        (cx - 4,   cy - 38),
+        (cx - 4,   cy - 20),
+        (cx - 14,  cy - 14),
+        (cx - 22,  cy - 26),
+    ]
+    painted_blob(img, back_pts, ROSIE["black"], outline_thick=3)
     return img
 
 
 def rosie_tail():
-    """BC fluffy tail — long curve with white tip."""
+    """Long fluffy BC tail extending behind (left) the body, curving up
+    slightly with a white tip."""
     img = new_part()
     cx, cy = W // 2, H // 2
     tail_pts = [
-        (cx - 4,  cy - 40),
-        (cx + 8,  cy - 20),
-        (cx + 14, cy + 8),
-        (cx + 12, cy + 40),
-        (cx + 4,  cy + 60),
-        (cx - 4,  cy + 64),
-        (cx - 12, cy + 50),
-        (cx - 16, cy + 20),
-        (cx - 14, cy - 10),
-        (cx - 8,  cy - 30),
+        (cx + 8,   cy - 4),    # base (attaches to back of torso)
+        (cx + 4,   cy - 16),
+        (cx - 14,  cy - 28),
+        (cx - 36,  cy - 32),   # mid curve
+        (cx - 60,  cy - 24),
+        (cx - 76,  cy - 4),    # tip end
+        (cx - 70,  cy + 10),
+        (cx - 50,  cy + 4),
+        (cx - 28,  cy - 4),
+        (cx - 4,   cy + 4),
     ]
     painted_blob(img, tail_pts, ROSIE["black"], outline_thick=4)
-    # White tip
+    # White tip (the famous BC tail tip)
     tip_pts = [
-        (cx - 6, cy + 44),
-        (cx + 4, cy + 50),
-        (cx + 2, cy + 64),
-        (cx - 6, cy + 66),
-        (cx - 12, cy + 54),
+        (cx - 56,  cy - 20),
+        (cx - 76,  cy - 4),
+        (cx - 66,  cy + 8),
+        (cx - 50,  cy + 0),
     ]
     painted_blob(img, tip_pts, ROSIE["white"], outline_thick=1)
     return img
 
 
-def rosie_leg(back: bool = False):
-    """Lean leg — slightly tapered shape, white sock on the foot."""
+def rosie_legs(front: bool = True):
+    """Two legs viewed from the side. front=True draws the visible front
+    pair (closer to camera, larger). front=False draws the back pair
+    (smaller, partially behind, slightly different stance)."""
     img = new_part()
     cx, cy = W // 2, H // 2
-    leg_pts = [
-        (cx - 12, cy - 30),
-        (cx + 12, cy - 30),
-        (cx + 14, cy + 4),
-        (cx + 12, cy + 30),
-        (cx,      cy + 36),
-        (cx - 12, cy + 30),
-        (cx - 14, cy + 4),
+    # Closer leg (the one we see most of)
+    closer_pts = [
+        (cx - 8,   cy - 40),
+        (cx + 6,   cy - 38),
+        (cx + 10,  cy + 10),
+        (cx + 8,   cy + 40),
+        (cx - 4,   cy + 50),
+        (cx - 12,  cy + 48),
+        (cx - 14,  cy + 10),
+        (cx - 14,  cy - 28),
     ]
-    painted_blob(img, leg_pts, ROSIE["black"], outline_thick=4)
-    # White sock
-    sock_pts = [
-        (cx - 10, cy + 18),
-        (cx + 10, cy + 18),
-        (cx + 8,  cy + 32),
-        (cx,      cy + 36),
-        (cx - 8,  cy + 32),
+    painted_blob(img, closer_pts, ROSIE["black"], outline_thick=4)
+    # White paw
+    paw_pts = [
+        (cx - 12,  cy + 36),
+        (cx + 8,   cy + 36),
+        (cx + 6,   cy + 50),
+        (cx - 4,   cy + 52),
+        (cx - 12,  cy + 48),
     ]
-    painted_blob(img, sock_pts, ROSIE["white"], outline_thick=1)
+    painted_blob(img, paw_pts, ROSIE["white"], outline_thick=1)
+    # Toe pads
+    for dx in (-6, 0, 4):
+        ellipse(img, cx + dx, cy + 44, 1, 1, ROSIE["nose"])
+
+    if front:
+        # Second visible leg slightly behind, smaller silhouette
+        second_x = cx + 16
+        second_pts = [
+            (second_x - 6, cy - 30),
+            (second_x + 4, cy - 28),
+            (second_x + 6, cy + 8),
+            (second_x + 4, cy + 36),
+            (second_x - 4, cy + 40),
+            (second_x - 8, cy + 8),
+            (second_x - 10, cy - 18),
+        ]
+        painted_blob(img, second_pts, ROSIE["black"], outline_thick=3)
+        # White paw
+        sp_pts = [
+            (second_x - 8, cy + 28),
+            (second_x + 4, cy + 28),
+            (second_x + 2, cy + 38),
+            (second_x - 6, cy + 38),
+        ]
+        painted_blob(img, sp_pts, ROSIE["white"], outline_thick=1)
     return img
 
 
@@ -931,17 +979,15 @@ def write_parts(slug: str, parts: dict[str, Image.Image]):
 
 
 def main():
-    # Rosie — lean classic black/white border collie
+    # Rosie — SIDE-3/4 view border collie. Six parts matching the new
+    # rosie_config.json rig (body, head, ear, tail, legs-front, legs-back).
     write_parts("rosie", {
         "body": rosie_body(),
         "head": rosie_head(),
-        "ear-left": rosie_ear("left"),
-        "ear-right": rosie_ear("right"),
+        "ear": rosie_ear(),
         "tail": rosie_tail(),
-        "leg-front-left": rosie_leg(),
-        "leg-front-right": rosie_leg(),
-        "leg-back-left": rosie_leg(back=True),
-        "leg-back-right": rosie_leg(back=True),
+        "legs-front": rosie_legs(front=True),
+        "legs-back": rosie_legs(front=False),
     })
     # Charlie — dog skeleton, tri-color stocky
     write_parts("charlie", {

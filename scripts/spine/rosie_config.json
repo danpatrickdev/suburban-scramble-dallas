@@ -1,42 +1,33 @@
 {
   "skeleton": {
     "name": "rosie",
-    "width": 384,
-    "height": 512
+    "width": 320,
+    "height": 480
   },
   "bones": [
     { "name": "root" },
-    { "name": "torso", "parent": "root", "x": 0, "y": 0, "length": 100 },
-    { "name": "head", "parent": "torso", "x": 0, "y": 110, "length": 80 },
-    { "name": "ear-left", "parent": "head", "x": -40, "y": 50, "length": 40 },
-    { "name": "ear-right", "parent": "head", "x": 40, "y": 50, "length": 40 },
-    { "name": "tail", "parent": "torso", "x": 60, "y": -70, "length": 60 },
-    { "name": "leg-fl", "parent": "torso", "x": -55, "y": 30, "length": 30 },
-    { "name": "leg-fr", "parent": "torso", "x": 55, "y": 30, "length": 30 },
-    { "name": "leg-bl", "parent": "torso", "x": -50, "y": -50, "length": 30 },
-    { "name": "leg-br", "parent": "torso", "x": 50, "y": -50, "length": 30 }
+    { "name": "torso", "parent": "root", "x": 0, "y": 0, "length": 80 },
+    { "name": "legs-back", "parent": "torso", "x": -10, "y": -42, "length": 50 },
+    { "name": "tail", "parent": "torso", "x": -42, "y": 30, "length": 60 },
+    { "name": "legs-front", "parent": "torso", "x": 6, "y": -40, "length": 50 },
+    { "name": "head", "parent": "torso", "x": 28, "y": 50, "length": 60 },
+    { "name": "ear", "parent": "head", "x": 0, "y": 30, "length": 30 }
   ],
   "slots": [
-    { "name": "leg-bl", "bone": "leg-bl", "attachment": "leg-back-left" },
-    { "name": "leg-br", "bone": "leg-br", "attachment": "leg-back-right" },
+    { "name": "legs-back", "bone": "legs-back", "attachment": "legs-back" },
     { "name": "tail", "bone": "tail", "attachment": "tail" },
     { "name": "torso", "bone": "torso", "attachment": "body" },
-    { "name": "leg-fl", "bone": "leg-fl", "attachment": "leg-front-left" },
-    { "name": "leg-fr", "bone": "leg-fr", "attachment": "leg-front-right" },
+    { "name": "legs-front", "bone": "legs-front", "attachment": "legs-front" },
     { "name": "head", "bone": "head", "attachment": "head" },
-    { "name": "ear-left", "bone": "ear-left", "attachment": "ear-left" },
-    { "name": "ear-right", "bone": "ear-right", "attachment": "ear-right" }
+    { "name": "ear", "bone": "ear", "attachment": "ear" }
   ],
   "attachments": {
-    "body":             { "width": 256, "height": 256, "x": 0, "y": 0 },
-    "head":             { "width": 256, "height": 256, "x": 0, "y": 0 },
-    "ear-left":         { "width": 256, "height": 256, "x": 0, "y": 0 },
-    "ear-right":        { "width": 256, "height": 256, "x": 0, "y": 0 },
-    "tail":             { "width": 256, "height": 256, "x": 0, "y": 0 },
-    "leg-front-left":   { "width": 256, "height": 256, "x": 0, "y": 0 },
-    "leg-front-right":  { "width": 256, "height": 256, "x": 0, "y": 0 },
-    "leg-back-left":    { "width": 256, "height": 256, "x": 0, "y": 0 },
-    "leg-back-right":   { "width": 256, "height": 256, "x": 0, "y": 0 }
+    "legs-back":  { "width": 256, "height": 256, "x": 0, "y": 0 },
+    "tail":       { "width": 256, "height": 256, "x": 0, "y": 0 },
+    "body":       { "width": 256, "height": 256, "x": 0, "y": 0 },
+    "legs-front": { "width": 256, "height": 256, "x": 0, "y": 0 },
+    "head":       { "width": 256, "height": 256, "x": 0, "y": 0 },
+    "ear":        { "width": 256, "height": 256, "x": 0, "y": 0 }
   },
   "animations": ["idle"],
   "custom_animations": {
@@ -45,38 +36,28 @@
         "torso": {
           "translate": [
             { "time": 0,    "x": 0, "y": 0 },
-            { "time": 0.2,  "x": 0, "y": 4 },
+            { "time": 0.2,  "x": 0, "y": 3 },
             { "time": 0.4,  "x": 0, "y": 0 },
-            { "time": 0.6,  "x": 0, "y": 4 },
+            { "time": 0.6,  "x": 0, "y": 3 },
             { "time": 0.8,  "x": 0, "y": 0 }
           ]
         },
         "tail": {
           "rotate": [
             { "time": 0,    "angle": 0 },
-            { "time": 0.15, "angle": 25 },
-            { "time": 0.3,  "angle": -10 },
-            { "time": 0.45, "angle": 25 },
-            { "time": 0.6,  "angle": -10 },
+            { "time": 0.2,  "angle": 18 },
+            { "time": 0.4,  "angle": -10 },
+            { "time": 0.6,  "angle": 18 },
             { "time": 0.8,  "angle": 0 }
           ]
         },
-        "ear-left": {
+        "head": {
           "rotate": [
-            { "time": 0,   "angle": 0 },
-            { "time": 0.2, "angle": -8 },
-            { "time": 0.4, "angle": 0 },
-            { "time": 0.6, "angle": -8 },
-            { "time": 0.8, "angle": 0 }
-          ]
-        },
-        "ear-right": {
-          "rotate": [
-            { "time": 0,   "angle": 0 },
-            { "time": 0.2, "angle": 8 },
-            { "time": 0.4, "angle": 0 },
-            { "time": 0.6, "angle": 8 },
-            { "time": 0.8, "angle": 0 }
+            { "time": 0,    "angle": 0 },
+            { "time": 0.2,  "angle": 3 },
+            { "time": 0.4,  "angle": 0 },
+            { "time": 0.6,  "angle": -3 },
+            { "time": 0.8,  "angle": 0 }
           ]
         }
       }
@@ -86,24 +67,16 @@
         "head": {
           "translate": [
             { "time": 0,    "x": 0, "y": 0 },
-            { "time": 0.1,  "x": 0, "y": -10 },
-            { "time": 0.25, "x": 0, "y": 25 },
+            { "time": 0.1,  "x": 0, "y": -4 },
+            { "time": 0.25, "x": 8, "y": 0 },
             { "time": 0.5,  "x": 0, "y": 0 }
           ]
         },
         "torso": {
           "translate": [
             { "time": 0,    "x": 0, "y": 0 },
-            { "time": 0.15, "x": 0, "y": -8 },
-            { "time": 0.3,  "x": 0, "y": 0 },
+            { "time": 0.15, "x": 0, "y": -3 },
             { "time": 0.5,  "x": 0, "y": 0 }
-          ]
-        },
-        "tail": {
-          "rotate": [
-            { "time": 0,   "angle": 0 },
-            { "time": 0.2, "angle": 35 },
-            { "time": 0.5, "angle": 0 }
           ]
         }
       }
@@ -113,28 +86,14 @@
         "torso": {
           "scale": [
             { "time": 0,    "x": 1,    "y": 1 },
-            { "time": 0.15, "x": 1.15, "y": 0.92 },
+            { "time": 0.15, "x": 1.10, "y": 0.95 },
             { "time": 0.3,  "x": 1,    "y": 1 }
-          ]
-        },
-        "ear-left": {
-          "rotate": [
-            { "time": 0,   "angle": 0 },
-            { "time": 0.1, "angle": -15 },
-            { "time": 0.3, "angle": 0 }
-          ]
-        },
-        "ear-right": {
-          "rotate": [
-            { "time": 0,   "angle": 0 },
-            { "time": 0.1, "angle": 15 },
-            { "time": 0.3, "angle": 0 }
           ]
         },
         "tail": {
           "rotate": [
             { "time": 0,    "angle": 0 },
-            { "time": 0.15, "angle": 45 },
+            { "time": 0.15, "angle": 35 },
             { "time": 0.3,  "angle": 0 }
           ]
         }
