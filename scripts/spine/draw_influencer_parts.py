@@ -23,11 +23,19 @@ from pathlib import Path
 
 OUT = Path("static/assets/spine/influencer/parts")
 REF = Path("static/assets/spine/influencer/reference.png")
+import sys
+sys.path.insert(0, str(Path(__file__).parent))
+from cel_paint import (
+    INK as OUTLINE,
+    aa_ellipse as ellipse,
+    painted_ellipse,
+    painted_rounded_rect,
+    darken, lighten,
+)
+
 W, H = 256, 256
 
-# Palette — saturated cel colors, Humongous Entertainment vibe.
-OUTLINE = (12, 14, 20, 255)
-THICK = 6
+# Palette — saturated cel colors, Magic Design Studios vibe.
 SKIN = (250, 215, 180, 255)
 SKIN_S = (215, 175, 140, 255)
 HAIR = (78, 44, 24, 255)
@@ -47,38 +55,18 @@ def new_part() -> Image.Image:
     return Image.new("RGBA", (W, H), (0, 0, 0, 0))
 
 
-def ellipse(img: Image.Image, cx: int, cy: int, rx: int, ry: int, color):
-    # Anti-aliased via 4× supersample, same trick as draw_characters_parts.
-    ss = 4
-    big = Image.new("RGBA", ((rx + 4) * 2 * ss, (ry + 4) * 2 * ss), (0, 0, 0, 0))
-    ImageDraw.Draw(big).ellipse(
-        [4 * ss, 4 * ss, (rx * 2 + 4) * ss, (ry * 2 + 4) * ss],
-        fill=color,
-    )
-    small = big.resize(((rx + 4) * 2, (ry + 4) * 2), Image.LANCZOS)
-    img.alpha_composite(small, (cx - rx - 4, cy - ry - 4))
-
-
-def filled_outlined_ellipse(img, cx, cy, rx, ry, fill, outline=OUTLINE, thick=THICK):
-    ellipse(img, cx, cy, rx + thick, ry + thick, outline)
-    ellipse(img, cx, cy, rx, ry, fill)
-    if fill[3] == 255 and fill != outline:
-        hl = (
-            min(fill[0] + 40, 255),
-            min(fill[1] + 40, 255),
-            min(fill[2] + 40, 255),
-            120,
-        )
-        ellipse(img, cx - rx // 3, cy - ry // 3, max(2, rx // 3), max(2, ry // 3), hl)
+def filled_outlined_ellipse(img, cx, cy, rx, ry, fill, outline=OUTLINE, thick=6):
+    painted_ellipse(img, cx, cy, rx, ry, fill,
+                    outline_top=max(2, thick - 2),
+                    outline_bottom=thick + 1)
 
 
 def rect(img, x, y, w, h, color):
     ImageDraw.Draw(img).rectangle([x, y, x + w - 1, y + h - 1], fill=color)
 
 
-def filled_outlined_rect(img, x, y, w, h, fill, outline=OUTLINE, thick=THICK):
-    rect(img, x - thick, y - thick, w + thick * 2, h + thick * 2, outline)
-    rect(img, x, y, w, h, fill)
+def filled_outlined_rect(img, x, y, w, h, fill, outline=OUTLINE, thick=4):
+    painted_rounded_rect(img, x, y, w, h, fill, radius=max(2, min(w, h) // 4))
 
 
 # ── Parts ─────────────────────────────────────────────────────────────────

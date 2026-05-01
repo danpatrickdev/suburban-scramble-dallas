@@ -150,6 +150,8 @@ export class GameScene extends Phaser.Scene {
 
 	private spineRosie?: SpineCharacterObject;
 	private spineBoss?: SpineCharacterObject;
+	private playerShadow?: Phaser.GameObjects.Ellipse;
+	private bossShadow?: Phaser.GameObjects.Ellipse;
 
 	private createSpinePlayer() {
 		const sceneAny = this as unknown as {
@@ -169,6 +171,12 @@ export class GameScene extends Phaser.Scene {
 			if (spineModule?.SkinsAndAnimationBoundsProvider) {
 				bp = new spineModule.SkinsAndAnimationBoundsProvider(null);
 			}
+			// Soft drop shadow under the character — grounds them in the
+			// scene the way Magic Design Studios games do.
+			this.playerShadow = this.add
+				.ellipse(this.player.x, this.player.y + 28, 56, 14, 0x0d1018, 0.45)
+				.setDepth(199);
+
 			const obj = sceneAny.add.spine(this.player.x, this.player.y, `${id}-data`, `${id}-atlas`, bp) as SpineCharacterObject;
 			if (!obj) throw new Error('add.spine returned undefined');
 			obj.setScale(SPINE_SCALE);
@@ -195,6 +203,11 @@ export class GameScene extends Phaser.Scene {
 			if (spineModule?.SkinsAndAnimationBoundsProvider) {
 				bp = new spineModule.SkinsAndAnimationBoundsProvider(null);
 			}
+			// Drop shadow under the boss
+			this.bossShadow = this.add
+				.ellipse(this.boss.x, this.boss.y + 32, 80, 18, 0x0d1018, 0.45)
+				.setDepth(6);
+
 			const sb = sceneAny.add.spine(this.boss.x, this.boss.y, 'influencer-data', 'influencer-atlas', bp) as SpineCharacterObject;
 			if (!sb) return;
 			sb.setScale(0.45);
@@ -274,10 +287,16 @@ export class GameScene extends Phaser.Scene {
 			const current = r.animationState?.tracks?.[0]?.animation?.name;
 			if (current !== desired) r.animationState?.setAnimation(0, desired, true);
 		}
+		if (this.playerShadow && this.player.active) {
+			this.playerShadow.setPosition(this.player.x, this.player.y + 28);
+		}
 
 		const sb = this.spineBoss;
 		if (sb && this.boss && this.boss.active) {
 			sb.setPosition(this.boss.x, this.boss.y);
+		}
+		if (this.bossShadow && this.boss && this.boss.active) {
+			this.bossShadow.setPosition(this.boss.x, this.boss.y + 32);
 		}
 	}
 

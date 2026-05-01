@@ -12,57 +12,42 @@ Templates:
     muzzle); Tia is bigger/chunkier, Nancy is leaner with bigger eyes
   - Katie: humanoid skeleton (torso, head with ponytail, two arms, legs)
 """
+import sys
 from PIL import Image, ImageDraw
 from pathlib import Path
 
+sys.path.insert(0, str(Path(__file__).parent))
+from cel_paint import (
+    INK as OUTLINE,
+    aa_ellipse as ellipse,
+    painted_ellipse,
+    painted_rounded_rect,
+    drop_shadow,
+    darken,
+    lighten,
+)
+
 W, H = 256, 256
-# Pure-black ink line for the cel/Humongous look. Slightly off-black to read
-# softer than #000.
-OUTLINE = (12, 14, 20, 255)
-# Default outline thickness for limbs/heads — chunky enough that even at
-# spine scale 0.50 the line reads as a clean ink contour, not a pixel edge.
-THICK = 6
 
 
 def new_part() -> Image.Image:
     return Image.new("RGBA", (W, H), (0, 0, 0, 0))
 
 
-def ellipse(img, cx, cy, rx, ry, color):
-    # Use a 4× supersampled ellipse + downsample so the edge anti-aliases
-    # cleanly into the transparent alpha. Without this, PIL's default
-    # ellipse leaves a stair-stepped edge that reads as "pixel sprite".
-    ss = 4
-    big = Image.new("RGBA", ((rx + 4) * 2 * ss, (ry + 4) * 2 * ss), (0, 0, 0, 0))
-    ImageDraw.Draw(big).ellipse(
-        [4 * ss, 4 * ss, (rx * 2 + 4) * ss, (ry * 2 + 4) * ss],
-        fill=color,
-    )
-    small = big.resize(((rx + 4) * 2, (ry + 4) * 2), Image.LANCZOS)
-    img.alpha_composite(small, (cx - rx - 4, cy - ry - 4))
-
-
-def filled_outlined_ellipse(img, cx, cy, rx, ry, fill, outline=OUTLINE, thick=THICK):
-    ellipse(img, cx, cy, rx + thick, ry + thick, outline)
-    ellipse(img, cx, cy, rx, ry, fill)
-    # Subtle cel highlight — flat-color "shine" on the upper-left of the form.
-    if fill[3] == 255 and fill != outline:
-        hl = (
-            min(fill[0] + 40, 255),
-            min(fill[1] + 40, 255),
-            min(fill[2] + 40, 255),
-            120,
-        )
-        ellipse(img, cx - rx // 3, cy - ry // 3, max(2, rx // 3), max(2, ry // 3), hl)
+def filled_outlined_ellipse(img, cx, cy, rx, ry, fill, outline=OUTLINE, thick=6):
+    """Magic-Design painted ellipse: variable-weight ink, base, painted
+    shadow, cel highlight, rim light."""
+    painted_ellipse(img, cx, cy, rx, ry, fill,
+                    outline_top=max(2, thick - 2),
+                    outline_bottom=thick + 1)
 
 
 def rect(img, x, y, w, h, color):
     ImageDraw.Draw(img).rectangle([x, y, x + w - 1, y + h - 1], fill=color)
 
 
-def filled_outlined_rect(img, x, y, w, h, fill, outline=OUTLINE, thick=THICK):
-    rect(img, x - thick, y - thick, w + thick * 2, h + thick * 2, outline)
-    rect(img, x, y, w, h, fill)
+def filled_outlined_rect(img, x, y, w, h, fill, outline=OUTLINE, thick=4):
+    painted_rounded_rect(img, x, y, w, h, fill, radius=max(2, min(w, h) // 4))
 
 
 # ── Dog template (Charlie — tri-color stocky border collie) ───────────────

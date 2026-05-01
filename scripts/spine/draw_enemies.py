@@ -14,35 +14,35 @@ Output:
   static/assets/enemies/coffee.png  + .json
 """
 import json
+import sys
 from pathlib import Path
 from PIL import Image, ImageDraw
 
+sys.path.insert(0, str(Path(__file__).parent))
+from cel_paint import (
+    INK,
+    aa_ellipse as _aa_ellipse,
+    painted_ellipse,
+    darken, lighten,
+)
+
 FRAME = 48
-INK = (12, 14, 20, 255)
-INK_THIN = (12, 14, 20, 200)
-THICK = 2  # 48px sprites — thinner outline than 256px parts
+INK_THIN = (18, 22, 28, 200)
 
 
-def _aa_ellipse(img, cx, cy, rx, ry, color):
-    ss = 4
-    big = Image.new("RGBA", ((rx + 2) * 2 * ss, (ry + 2) * 2 * ss), (0, 0, 0, 0))
-    ImageDraw.Draw(big).ellipse(
-        [2 * ss, 2 * ss, (rx * 2 + 2) * ss, (ry * 2 + 2) * ss], fill=color
-    )
-    small = big.resize(((rx + 2) * 2, (ry + 2) * 2), Image.LANCZOS)
-    img.alpha_composite(small, (cx - rx - 2, cy - ry - 2))
-
-
-def fill_outlined_ellipse(img, cx, cy, rx, ry, fill, thick=THICK):
-    _aa_ellipse(img, cx, cy, rx + thick, ry + thick, INK)
-    _aa_ellipse(img, cx, cy, rx, ry, fill)
+def fill_outlined_ellipse(img, cx, cy, rx, ry, fill, thick=2):
+    """Painted ellipse for small (~48px) enemy sprites — uses the same
+    Magic-Design painted_ellipse helper as the player parts but with
+    thinner outlines tuned for the smaller frame."""
+    painted_ellipse(img, cx, cy, rx, ry, fill,
+                    outline_top=max(1, thick - 1),
+                    outline_bottom=thick + 1)
 
 
 def cel_highlight(img, cx, cy, rx, ry, fill):
-    if fill[3] != 255:
-        return
-    hl = (min(fill[0] + 50, 255), min(fill[1] + 50, 255), min(fill[2] + 50, 255), 130)
-    _aa_ellipse(img, cx - rx // 3, cy - ry // 3, max(2, rx // 3), max(2, ry // 3), hl)
+    # No-op: painted_ellipse already adds a highlight + rim. Keep the
+    # symbol so existing call sites don't break.
+    pass
 
 
 # ── Peloton (cyclist on a road bike, top-down) ───────────────────────────
