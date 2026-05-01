@@ -18,6 +18,9 @@ export abstract class Enemy extends Phaser.Physics.Arcade.Sprite {
 		scene.add.existing(this);
 		scene.physics.add.existing(this);
 		this.setDepth(5);
+		// Render enemies bigger than their atlas frames — they were reading too
+		// small once characters got Spine-rigged at full size.
+		this.setScale(1.5);
 		const animKey = `${textureKey}__idle`;
 		if (scene.anims.exists(animKey)) this.play(animKey);
 	}

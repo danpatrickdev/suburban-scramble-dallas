@@ -145,41 +145,22 @@ export class GameScene extends Phaser.Scene {
 			this.spineBoss = undefined;
 		});
 
-		if (this.registry.get('spineTest')) {
-			this.renderSpineTest();
-		}
+		this.createSpinePlayer();
 	}
 
 	private spineRosie?: SpineCharacterObject;
 	private spineBoss?: SpineCharacterObject;
 
-	private renderSpineTest() {
-		const sceneAny = this as unknown as {
-			add: { spine?: (x: number, y: number, dataKey: string, atlasKey: string) => unknown };
-		};
-		const banner = this.add.text(8, 8, '[SPINE] booting...', {
-			fontFamily: 'monospace',
-			fontSize: '11px',
-			color: '#88e1ff',
-			backgroundColor: '#0c0e14'
-		}).setDepth(1000);
-		if (!sceneAny.add.spine) {
-			banner.setText('[SPINE] FAIL — plugin not registered').setColor('#ff3b5c');
-			return;
-		}
-		this.createSpinePlayer(banner);
-	}
-
-	private createSpinePlayer(banner?: Phaser.GameObjects.Text) {
+	private createSpinePlayer() {
 		const sceneAny = this as unknown as {
 			add: { spine?: (x: number, y: number, dataKey: string, atlasKey: string, boundsProvider?: unknown) => unknown };
 		};
 		if (!sceneAny.add.spine) return;
 		const id = this.characterId;
-		// Per-character scale: cats are smallest, dogs medium, humans largest.
-		const SCALE: Record<CharacterId, number> = {
-			rosie: 0.35, charlie: 0.42, katie: 0.42, tia: 0.32, nancy: 0.28
-		};
+		// All characters at the same on-screen scale; per-character drawn
+		// sizes vary slightly so this isn't perfectly uniform but reads as
+		// the same visual presence.
+		const SPINE_SCALE = 0.50;
 		try {
 			let bp: unknown = undefined;
 			const spineModule = this.registry.get('spineModule') as
@@ -190,15 +171,13 @@ export class GameScene extends Phaser.Scene {
 			}
 			const obj = sceneAny.add.spine(this.player.x, this.player.y, `${id}-data`, `${id}-atlas`, bp) as SpineCharacterObject;
 			if (!obj) throw new Error('add.spine returned undefined');
-			obj.setScale(SCALE[id] ?? 0.35);
+			obj.setScale(SPINE_SCALE);
 			obj.setDepth(200);
 			obj.animationState?.setAnimation(0, 'idle', true);
 			this.spineRosie = obj;
 			(this.player as Phaser.GameObjects.Sprite).setAlpha(0);
-			banner?.setText(`[SPINE] OK — ${id} rigged`);
 		} catch (err) {
-			banner?.setText('[SPINE] FAIL — ' + (err as Error).message).setColor('#ff3b5c');
-			console.error('[spineTest] create failed:', err);
+			console.error('[spine] create player failed:', err);
 		}
 	}
 
@@ -226,7 +205,7 @@ export class GameScene extends Phaser.Scene {
 			// physics body / phone hitbox stay alive on the original GameObject.
 			(this.boss as Phaser.GameObjects.Sprite).setAlpha(0);
 		} catch (err) {
-			console.error('[spineTest] boss create failed:', err);
+			console.error('[spine] boss create failed:', err);
 		}
 	}
 
@@ -310,10 +289,8 @@ export class GameScene extends Phaser.Scene {
 			.setStrokeStyle(2, 0xff3333, 0.8)
 			.setDepth(9);
 
-		// Spine overlay for the boss when ?spine is enabled
-		if (this.registry.get('spineTest') && this.boss) {
-			this.createSpineBoss();
-		}
+		// Spine overlay for the boss
+		if (this.boss) this.createSpineBoss();
 
 		this.physics.add.overlap(this.player, this.boss, () => this.player.takeDamage(1));
 		// Projectiles damage the boss's phone hitbox

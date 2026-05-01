@@ -8,7 +8,6 @@
 	import PauseMenu from '$lib/components/PauseMenu.svelte';
 	import GameOver from '$lib/components/GameOver.svelte';
 	import MusicHost from '$lib/components/MusicHost.svelte';
-	import SpineTestBadge from '$lib/components/SpineTestBadge.svelte';
 	import { selectedCharacter } from '$lib/stores/character';
 	import { progress, refreshFromStorage } from '$lib/stores/progress';
 	import { currentDialogue } from '$lib/stores/dialogue';
@@ -92,7 +91,6 @@
 </script>
 
 <MusicHost track={musicTrack} />
-<SpineTestBadge />
 
 <div class="root">
 	{#if phase === 'splash'}

@@ -61,17 +61,15 @@ export class BootScene extends Phaser.Scene {
 		// Tiles
 		this.load.image(katyTrail.tileKey, katyTrail.tilePath);
 
-		// Optional Spine test asset — loaded only when the SpinePlugin is registered
-		// (PhaserGame.ts toggles via ?spine URL flag).
-		if (this.registry.get('spineTest')) {
-			const loader = this.load as Phaser.Loader.LoaderPlugin & {
-				spineJson?: (key: string, url: string) => void;
-				spineAtlas?: (key: string, url: string, premultipliedAlpha?: boolean) => void;
-			};
-			for (const id of [...CHARACTER_IDS, 'influencer'] as const) {
-				loader.spineJson?.(`${id}-data`, `assets/spine/${id}/built/${id}.json`);
-				loader.spineAtlas?.(`${id}-atlas`, `assets/spine/${id}/built/${id}.atlas`);
-			}
+		// Spine assets for the cast + boss (rendered on top of the legacy
+		// atlas-frame sprites which still own physics + hitboxes).
+		const loader = this.load as Phaser.Loader.LoaderPlugin & {
+			spineJson?: (key: string, url: string) => void;
+			spineAtlas?: (key: string, url: string, premultipliedAlpha?: boolean) => void;
+		};
+		for (const id of [...CHARACTER_IDS, 'influencer'] as const) {
+			loader.spineJson?.(`${id}-data`, `assets/spine/${id}/built/${id}.json`);
+			loader.spineAtlas?.(`${id}-atlas`, `assets/spine/${id}/built/${id}.atlas`);
 		}
 	}
 

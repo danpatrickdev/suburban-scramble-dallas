@@ -6,11 +6,6 @@ export interface RunningGame {
 	destroy(): void;
 }
 
-function spineTestEnabled(): boolean {
-	if (typeof window === 'undefined') return false;
-	return new URLSearchParams(window.location.search).has('spine');
-}
-
 export async function startGame(
 	parent: HTMLElement,
 	character: CharacterId,
@@ -24,21 +19,19 @@ export async function startGame(
 	}
 	const { BootScene } = await import('./scenes/BootScene');
 	const { GameScene } = await import('./scenes/GameScene');
-	const useSpine = spineTestEnabled();
-	const SpinePluginModule = useSpine ? await import('@esotericsoftware/spine-phaser') : null;
+	const SpinePluginModule = await import('@esotericsoftware/spine-phaser');
 
 	const config: Phaser.Types.Core.GameConfig = {
-		// spine-phaser's WebGL renderer path is the supported one. Force WEBGL when in spine mode.
-		type: useSpine ? Phaser.WEBGL : Phaser.AUTO,
+		type: Phaser.WEBGL,
 		parent,
 		width: GAME_WIDTH,
 		height: GAME_HEIGHT,
 		backgroundColor: '#0c0e14',
-		// Pixel-art mode globally crisps up sprites; with Spine we want smooth vector
-		// scaling. Default to pixel-art unless ?spine is in the URL.
-		pixelArt: !useSpine,
-		antialias: useSpine,
-		roundPixels: !useSpine,
+		// Smooth scaling for Spine vector parts; the trail tile and remaining
+		// pixel art read fine without nearest-neighbor.
+		pixelArt: false,
+		antialias: true,
+		roundPixels: false,
 		scale: {
 			mode: Phaser.Scale.FIT,
 			autoCenter: Phaser.Scale.CENTER_BOTH
@@ -49,27 +42,21 @@ export async function startGame(
 		},
 		fps: { target: 60, forceSetTimeOut: false },
 		scene: [BootScene, GameScene],
-		plugins: useSpine && SpinePluginModule
-			? {
-				scene: [
-					{
-						key: 'spine.SpinePlugin',
-						plugin: SpinePluginModule.SpinePlugin,
-						mapping: 'spine'
-					}
-				]
-			}
-			: undefined
+		plugins: {
+			scene: [
+				{
+					key: 'spine.SpinePlugin',
+					plugin: SpinePluginModule.SpinePlugin,
+					mapping: 'spine'
+				}
+			]
+		}
 	};
 
 	const game = new Phaser.Game(config);
 	game.registry.set('character', character);
 	game.registry.set('difficulty', difficulty);
-	game.registry.set('spineTest', useSpine);
-	if (SpinePluginModule) {
-		// Expose the module so GameScene can reach BoundsProvider classes
-		game.registry.set('spineModule', SpinePluginModule);
-	}
+	game.registry.set('spineModule', SpinePluginModule);
 
 	return {
 		destroy() {

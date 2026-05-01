@@ -235,70 +235,74 @@ K_SCREEN = (140, 215, 255, 255)
 def katie_body():
     img = new_part()
     cx, cy = W // 2, H // 2
-    # Pink Lululemon torso — slim athletic build (narrower than v1)
-    filled_outlined_ellipse(img, cx, cy, 34, 62, K_PINK)
-    # Crop top hem
-    rect(img, cx - 30, cy + 48, 60, 4, K_PINK_S)
+    # Pink Lululemon torso — slim athletic SHAPE, but full overall size.
+    # Tall + narrow ellipse: hourglass runner silhouette, not chubby.
+    filled_outlined_ellipse(img, cx, cy, 38, 86, K_PINK)
+    # Crop-top hem (lower)
+    rect(img, cx - 34, cy + 70, 68, 5, K_PINK_S)
     # Subtle midline shading
-    rect(img, cx - 1, cy - 32, 2, 58, K_PINK_S)
-    # Apple Watch tucked just outside the torso silhouette
-    filled_outlined_rect(img, cx - 42, cy - 4, 10, 14, K_BLACK, OUTLINE, 2)
-    rect(img, cx - 40, cy - 2, 6, 10, K_SCREEN)
+    rect(img, cx - 1, cy - 50, 2, 90, K_PINK_S)
+    # Waist tapering hint (lighter at the middle to suggest hourglass)
+    ellipse(img, cx - 32, cy + 4, 4, 22, K_PINK_S)
+    ellipse(img, cx + 32, cy + 4, 4, 22, K_PINK_S)
+    # Apple Watch on the wrist (left side as we look down)
+    filled_outlined_rect(img, cx - 48, cy - 6, 12, 18, K_BLACK, OUTLINE, 2)
+    rect(img, cx - 46, cy - 4, 8, 14, K_SCREEN)
     return img
 
 
 def katie_head():
     img = new_part()
     cx, cy = W // 2, H // 2
-    # Crown of brunette hair — narrower
-    filled_outlined_ellipse(img, cx, cy - 8, 40, 44, K_HAIR)
-    # Face oval — slimmer
-    filled_outlined_ellipse(img, cx, cy + 16, 24, 28, K_SKIN)
+    # Crown of brunette hair (full size)
+    filled_outlined_ellipse(img, cx, cy - 12, 50, 54, K_HAIR)
+    # Face oval — slim cheekbones, not round
+    filled_outlined_ellipse(img, cx, cy + 18, 28, 36, K_SKIN)
     # Bangs
-    ellipse(img, cx, cy - 4, 30, 12, K_HAIR)
-    rect(img, cx - 28, cy - 2, 56, 4, K_HAIR_H)
+    ellipse(img, cx, cy - 4, 38, 14, K_HAIR)
+    rect(img, cx - 36, cy - 2, 72, 5, K_HAIR_H)
     # Eyes
-    filled_outlined_ellipse(img, cx - 9, cy + 12, 4, 4, K_WHITE, OUTLINE, 1)
-    filled_outlined_ellipse(img, cx + 9, cy + 12, 4, 4, K_WHITE, OUTLINE, 1)
-    ellipse(img, cx - 9, cy + 12, 2, 2, K_BLACK)
-    ellipse(img, cx + 9, cy + 12, 2, 2, K_BLACK)
+    filled_outlined_ellipse(img, cx - 11, cy + 14, 5, 5, K_WHITE, OUTLINE, 1)
+    filled_outlined_ellipse(img, cx + 11, cy + 14, 5, 5, K_WHITE, OUTLINE, 1)
+    ellipse(img, cx - 11, cy + 14, 2, 3, K_BLACK)
+    ellipse(img, cx + 11, cy + 14, 2, 3, K_BLACK)
     # Lips
-    filled_outlined_ellipse(img, cx, cy + 28, 6, 3, K_PINK_S, OUTLINE, 1)
-    # Hair highlights
-    rect(img, cx - 20, cy - 22, 3, 18, K_HAIR_H)
-    rect(img, cx + 16, cy - 26, 3, 14, K_HAIR_H)
+    filled_outlined_ellipse(img, cx, cy + 32, 8, 4, K_PINK_S, OUTLINE, 1)
+    # Highlight strands
+    rect(img, cx - 26, cy - 28, 4, 22, K_HAIR_H)
+    rect(img, cx + 22, cy - 32, 4, 16, K_HAIR_H)
     return img
 
 
 def katie_ponytail():
     img = new_part()
     cx, cy = W // 2, H // 2
-    # Long ponytail trailing toward bottom of frame
-    filled_outlined_ellipse(img, cx, cy + 30, 22, 56, K_HAIR)
-    filled_outlined_ellipse(img, cx, cy + 84, 14, 18, K_HAIR)
-    rect(img, cx - 5, cy, 2, 90, K_HAIR_H)
-    rect(img, cx + 4, cy + 8, 2, 86, K_HAIR_H)
+    # Long ponytail trailing toward bottom of frame, full length
+    filled_outlined_ellipse(img, cx, cy + 36, 26, 70, K_HAIR)
+    filled_outlined_ellipse(img, cx, cy + 100, 16, 22, K_HAIR)
+    rect(img, cx - 6, cy, 2, 110, K_HAIR_H)
+    rect(img, cx + 5, cy + 8, 2, 104, K_HAIR_H)
     # Hair tie
-    filled_outlined_rect(img, cx - 14, cy + 64, 28, 6, K_PINK_S, OUTLINE, 2)
+    filled_outlined_rect(img, cx - 18, cy + 76, 36, 7, K_PINK_S, OUTLINE, 2)
     return img
 
 
 def katie_arm():
     img = new_part()
     cx, cy = W // 2, H // 2
-    # Slim toned arm
-    filled_outlined_ellipse(img, cx, cy, 9, 50, K_SKIN)
+    # Slim but full-length toned arm
+    filled_outlined_ellipse(img, cx, cy, 11, 64, K_SKIN)
     return img
 
 
 def katie_leg():
     img = new_part()
     cx, cy = W // 2, H // 2
-    # Slim leggings
-    filled_outlined_ellipse(img, cx, cy, 11, 54, K_BLACK)
+    # Slim leggings, full-length
+    filled_outlined_ellipse(img, cx, cy, 13, 70, K_BLACK)
     # White sneaker tip
-    ellipse(img, cx, cy + 46, 10, 8, K_WHITE)
-    rect(img, cx - 7, cy + 46, 14, 2, K_PINK)
+    ellipse(img, cx, cy + 60, 12, 10, K_WHITE)
+    rect(img, cx - 9, cy + 60, 18, 2, K_PINK)
     return img
 
 
